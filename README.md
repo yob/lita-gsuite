@@ -1,6 +1,6 @@
 # lita-googleapps
 
-A lita plugin for interacting a Google Apps account. 
+A lita plugin for interacting with a Google Apps account.
 
 By design, only read-only access is requested. This is intended to provide some visibility
 into the account, not provide administrative functions.
