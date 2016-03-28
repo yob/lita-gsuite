@@ -1,20 +1,22 @@
 require 'lita/google_activity'
 require 'google/api_client'
 
-# Wrapper class for interacting with the google apps directory API. Use
-# this to list users, groups, group members.
-#
-# It only has read-only permissions, so cannot make any changes.
-#
-# Usage:
-#
-#     gateway = GoogleAppsGateway.new(
-#       domains: ["theconversation.edu.au", "theconversation.com"],
-#       acting_as_email: "user@theconversation.edu.au"
-#     )
-#
-
 module Lita
+  # Wrapper class for interacting with the google apps directory API. Use
+  # this to list users, groups, group members.
+  #
+  # It only has read-only permissions, so cannot make any changes.
+  #
+  # Usage:
+  #
+  #     gateway = GoogleAppsGateway.new(
+  #       service_account_email: "xxx@developer.gserviceaccount.com",
+  #       service_account_key: "base64 key",
+  #       service_account_secret: "secret",
+  #       domains: ["example.com"],
+  #       acting_as_email: "admin.user@example.com"
+  #     )
+  #
   class GoogleAppsGateway
     OAUTH_SCOPES = [
       "https://www.googleapis.com/auth/admin.directory.user.readonly",
