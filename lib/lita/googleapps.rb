@@ -15,13 +15,21 @@ module Lita
 
     def start_timers(payload)
       every(TIMER_INTERVAL) do |timer|
-        sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
-          list_activities(window_start, window_end)
+        logged_errors do
+          sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
+            list_activities(window_start, window_end)
+          end
         end
       end
     end
 
     private
+
+    def logged_errors(&block)
+      yield
+    rescue Exception => e
+      puts "Error in timer loop: #{e.inspect}"
+    end
 
     def sliding_window
       @sliding_window ||= SlidingWindow.new("last_activity_list_at", redis)
