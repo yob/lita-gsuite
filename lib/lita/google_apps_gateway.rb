@@ -57,10 +57,6 @@ module Lita
 
     private
 
-    def days_in_seconds(days)
-      days.to_i * 24 * 60 * 60
-    end
-
     def client
       @client ||= Google::APIClient.new(
         authorization: google_authorization,
