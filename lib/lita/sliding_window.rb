@@ -27,7 +27,6 @@ module Lita
       start_time = Time.now - mins_to_seconds(duration_minutes) - mins_to_seconds(buffer_minutes)
       advance_to = start_time + mins_to_seconds(duration_minutes)
 
-      puts "start_time: #{start_time} advance_to: #{advance_to} last_time: #{last_time}"
       return unless start_time > last_time
 
       yield last_time, advance_to 
