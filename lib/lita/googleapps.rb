@@ -15,14 +15,20 @@ module Lita
 
     def start_timers(payload)
       every(TIMER_INTERVAL) do |timer|
-        list_activities
+        sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
+          list_activities(window_start, window_end)
+        end
       end
     end
 
     private
 
-    def list_activities
-      gateway.admin_activities.sort_by(&:time).each do |activity|
+    def sliding_window
+      @sliding_window ||= SlidingWindow.new("last_activity_list_at", redis)
+    end
+
+    def list_activities(window_start, window_end)
+      gateway.admin_activities(window_start, window_end).sort_by(&:time).each do |activity|
         robot.send_message(target, activity.to_msg)
       end
     end

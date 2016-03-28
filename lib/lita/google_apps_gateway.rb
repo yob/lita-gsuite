@@ -32,12 +32,10 @@ module Lita
       @acting_as_email = acting_as_email
     end
 
-    def admin_activities(date = nil)
-      from_date ||= Time.now.utc - days_in_seconds(14)
-      to_date   ||= Time.now.utc
+    def admin_activities(start_time, end_time)
       result = client.execute!(api_admin_activity, userKey: "all",
-                                                   startTime: from_date.iso8601,
-                                                   endTime: to_date.iso8601,
+                                                   startTime: start_time.iso8601,
+                                                   endTime: end_time.iso8601,
                                                    applicationName: "admin")
       result.data.items.map { |item|
         item.events.map { |event|
