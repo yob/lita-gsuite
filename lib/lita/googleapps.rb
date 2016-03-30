@@ -22,11 +22,9 @@ module Lita
     private
 
     def start_admin_activities_timer
-      every(TIMER_INTERVAL) do |timer|
-        logged_errors do
-          sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
-            list_activities(window_start, window_end)
-          end
+      every_with_logged_errors(TIMER_INTERVAL) do |timer|
+        sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
+          list_activities(window_start, window_end)
         end
       end
     end
@@ -34,11 +32,9 @@ module Lita
     def start_max_weeks_without_login_timer
       return if config.max_weeks_without_login.to_i < 1
 
-      every(TIMER_INTERVAL) do |timer|
-        logged_errors do
-          persistent_every("max-weeks-with-login", weeks_in_seconds(1)) do
-            list_active_accounts_with_no_recent_login
-          end
+      every_with_logged_errors(TIMER_INTERVAL) do |timer|
+        persistent_every("max-weeks-with-login", weeks_in_seconds(1)) do
+          list_active_accounts_with_no_recent_login
         end
       end
     end
@@ -49,6 +45,12 @@ module Lita
 
     def max_weeks_without_login_ago
       Time.now - weeks_in_seconds(config.max_weeks_without_login.to_i)
+    end
+
+    def every_with_logged_errors(interval, &block)
+      logged_errors do
+        every(interval, &block)
+      end
     end
 
     def logged_errors(&block)
@@ -99,7 +101,7 @@ module Lita
         service_account_secret: config.service_account_secret,
         domains: config.domains,
         acting_as_email: config.user_email
-      ) 
+      )
     end
 
     Lita.register_handler(self)
