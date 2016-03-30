@@ -16,6 +16,12 @@ module Lita
 
     def start_timers(payload)
       start_max_weeks_without_login_timer
+      start_admin_activities_timer
+    end
+
+    private
+
+    def start_admin_activities_timer
       every(TIMER_INTERVAL) do |timer|
         logged_errors do
           sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
@@ -24,8 +30,6 @@ module Lita
         end
       end
     end
-
-    private
 
     def start_max_weeks_without_login_timer
       return if config.max_weeks_without_login.to_i < 1
