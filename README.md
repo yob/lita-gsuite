@@ -44,7 +44,6 @@ in the configured channel.
 Possible ideas for new features, either via chat commands or periodic updates:
 
 * ratio of 2fa uptake
-* list users that haven't signed in for some time - possible candidates for closing
 * list groups with no members
 * list users who have some admin privileges but don't use 2fa
 * list users who have never signed in
