@@ -34,17 +34,14 @@ module Lita
 
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         persistent_every("max-weeks-with-login", weeks_in_seconds(1)) do
-          list_active_accounts_with_no_recent_login
+          msg = MaxWeeksWithoutLoginMessage.new(gateway, config.max_weeks_without_login).to_msg
+          robot.send_message(target, msg) if msg
         end
       end
     end
 
     def weeks_in_seconds(weeks)
       60 * 60 * 24 * 7 * weeks.to_i
-    end
-
-    def max_weeks_without_login_ago
-      Time.now - weeks_in_seconds(config.max_weeks_without_login.to_i)
     end
 
     def every_with_logged_errors(interval, &block)
@@ -65,23 +62,6 @@ module Lita
 
     def sliding_window
       @sliding_window ||= SlidingWindow.new("last_activity_list_at", redis)
-    end
-
-    def list_active_accounts_with_no_recent_login
-      msg = "The following users have active accounts, but have not logged in for #{config.max_weeks_without_login} weeks. "
-      msg += "If appropriate, consider suspending or deleting their accounts:\n"
-      msg += active_users_with_no_recent_login.map { |user|
-        "- #{user.ou_path}/#{user.email}"
-      }.join("\n")
-      robot.send_message(target, msg)
-    end
-
-    def active_users_with_no_recent_login
-      gateway.users.reject { |user|
-        user.suspended?
-      }.select { |user|
-        user.last_login_at < max_weeks_without_login_ago && user.created_at < max_weeks_without_login_ago
-      }
     end
 
     def list_activities(window_start, window_end)
