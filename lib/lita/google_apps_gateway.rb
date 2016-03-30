@@ -1,4 +1,5 @@
 require 'lita/google_activity'
+require 'lita/google_user'
 require 'google/api_client'
 
 module Lita
@@ -55,7 +56,20 @@ module Lita
       }.flatten
     end
 
+    def users
+      @domains.map { |domain|
+        users_for_domain(domain)
+      }.flatten
+    end
+
     private
+
+    def users_for_domain(domain)
+      result = client.execute!(api_list_users, domain: domain)
+      result.data.users.map { |user|
+        GoogleUser.from_api_user(user)
+      }
+    end
 
     def client
       @client ||= Google::APIClient.new(
@@ -85,6 +99,14 @@ module Lita
         Base64.decode64(@service_account_key),
         @service_account_secret
       )
+    end
+
+    def directory_api
+      @api ||= client.discovered_api('admin','directory_v1')
+    end
+
+    def api_list_users
+      @api_list_users ||= directory_api.users.list
     end
 
     def api_admin_activity
