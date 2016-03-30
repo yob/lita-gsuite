@@ -11,11 +11,13 @@ module Lita
     config :user_email
     config :channel_name
     config :max_weeks_without_login
+    config :max_weeks_suspended
 
     on :loaded, :start_timers
 
     def start_timers(payload)
       start_max_weeks_without_login_timer
+      start_max_weeks_suspended_timer
       start_admin_activities_timer
     end
 
@@ -35,6 +37,17 @@ module Lita
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         persistent_every("max-weeks-with-login", weeks_in_seconds(1)) do
           msg = MaxWeeksWithoutLoginMessage.new(gateway, config.max_weeks_without_login).to_msg
+          robot.send_message(target, msg) if msg
+        end
+      end
+    end
+
+    def start_max_weeks_suspended_timer
+      return if config.max_weeks_suspended.to_i < 1
+
+      every_with_logged_errors(TIMER_INTERVAL) do |timer|
+        persistent_every("max-weeks-suspended", weeks_in_seconds(1)) do
+          msg = MaxWeeksSuspendedMessage.new(gateway, config.max_weeks_suspended).to_msg
           robot.send_message(target, msg) if msg
         end
       end
