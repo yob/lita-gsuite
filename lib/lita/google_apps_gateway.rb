@@ -1,5 +1,6 @@
 require 'lita/google_activity'
 require 'lita/google_group'
+require 'lita/google_two_factor_user'
 require 'lita/google_user'
 require 'google/api_client'
 
@@ -53,6 +54,17 @@ module Lita
       }.flatten
     end
 
+    # return a list of users that have Two Factor Auth enabled. Unfortunately this uses the reports
+    # API, so the most recent data is 4 days old.
+    def two_factor_users
+      result = client.execute!(api_user_usage, userKey: "all",
+                                               date: four_days_ago,
+                                               filters: "accounts:is_2sv_enrolled==true")
+      result.data.usage_reports.map { |item|
+        GoogleTwoFactorUser.from_api(item)
+      }
+    end
+
     def users
       @domains.map { |domain|
         users_for_domain(domain)
@@ -73,6 +85,14 @@ module Lita
       result.data.users.map { |user|
         GoogleUser.from_api_user(user)
       }
+    end
+
+    def four_days_ago
+      (Time.now.utc - days_in_seconds(4)).strftime("%Y-%m-%d")
+    end
+
+    def days_in_seconds(days)
+      days.to_i * 24 * 60 * 60
     end
 
     def client
@@ -115,6 +135,10 @@ module Lita
 
     def api_list_users
       @api_list_users ||= directory_api.users.list
+    end
+
+    def api_user_usage
+      @api_users_usage ||= client.discovered_api('admin', 'reports_v1').user_usage_report.get
     end
 
     def api_admin_activity
