@@ -47,4 +47,3 @@ Possible ideas for new features, either via chat commands or periodic updates:
 * list groups with no members
 * list users who have some admin privileges but don't use 2fa
 * list users who have never signed in
-* list users who aren't in an OU

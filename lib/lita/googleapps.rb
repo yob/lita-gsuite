@@ -18,6 +18,7 @@ module Lita
     def start_timers(payload)
       start_max_weeks_without_login_timer
       start_max_weeks_suspended_timer
+      start_no_org_unit_timer
       start_admin_activities_timer
     end
 
@@ -48,6 +49,15 @@ module Lita
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         persistent_every("max-weeks-suspended", weeks_in_seconds(1)) do
           msg = MaxWeeksSuspendedMessage.new(gateway, config.max_weeks_suspended).to_msg
+          robot.send_message(target, msg) if msg
+        end
+      end
+    end
+
+    def start_no_org_unit_timer
+      every_with_logged_errors(TIMER_INTERVAL) do |timer|
+        persistent_every("no-org-unit", weeks_in_seconds(1)) do
+          msg = NoOrgUnitMessage.new(gateway).to_msg
           robot.send_message(target, msg) if msg
         end
       end
