@@ -1,4 +1,5 @@
 require 'lita/google_activity'
+require 'lita/google_group'
 require 'lita/google_user'
 require 'google/api_client'
 
@@ -45,6 +46,13 @@ module Lita
       }.flatten
     end
 
+    # return an Array of all groups
+    def groups
+      @domains.map { |domain|
+        groups_for_domain(domain)
+      }.flatten
+    end
+
     def users
       @domains.map { |domain|
         users_for_domain(domain)
@@ -52,6 +60,13 @@ module Lita
     end
 
     private
+
+    def groups_for_domain(domain)
+      result = client.execute!(api_list_groups, domain: domain)
+      result.data.groups.map { |group|
+        GoogleGroup.from_api(group)
+      }
+    end
 
     def users_for_domain(domain)
       result = client.execute!(api_list_users, domain: domain)
@@ -92,6 +107,10 @@ module Lita
 
     def directory_api
       @api ||= client.discovered_api('admin','directory_v1')
+    end
+
+    def api_list_groups
+      @api_list_groups ||= directory_api.groups.list
     end
 
     def api_list_users
