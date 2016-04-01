@@ -45,3 +45,5 @@ Possible ideas for new features, either via chat commands or periodic updates:
 
 * list users who have some admin privileges but don't use 2fa
 * expand 2fa uptake report to include a per-OU breakdown
+* improve format of admn activity messages
+* more specs
