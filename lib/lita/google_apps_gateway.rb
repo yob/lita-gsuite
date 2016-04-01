@@ -41,18 +41,7 @@ module Lita
                                                    endTime: end_time.iso8601,
                                                    applicationName: "admin")
       result.data.items.map { |item|
-        item.events.map { |event|
-          GoogleActivity.new(
-            time: item.id.time,
-            actor: item.actor.email,
-            ip: item.ip_address,
-            name: event.name,
-            params: event.parameters.inject({}) { |accum, param|
-              accum[param.name] = param.value
-              accum
-            }
-          )
-        }
+        GoogleActivity.from_api(item)
       }.flatten
     end
 
