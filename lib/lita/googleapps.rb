@@ -21,6 +21,7 @@ module Lita
       start_no_org_unit_timer
       start_admin_activities_timer
       start_empty_groups_timer
+      start_two_factor_timer
     end
 
     private
@@ -68,6 +69,15 @@ module Lita
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         persistent_every("no-org-unit", weeks_in_seconds(1)) do
           msg = NoOrgUnitMessage.new(gateway).to_msg
+          robot.send_message(target, msg) if msg
+        end
+      end
+    end
+
+    def start_two_factor_timer
+      every_with_logged_errors(TIMER_INTERVAL) do |timer|
+        persistent_every("two-factor", weeks_in_seconds(1)) do
+          msg = TwoFactorMessage.new(gateway).to_msg
           robot.send_message(target, msg) if msg
         end
       end
