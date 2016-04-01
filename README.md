@@ -43,5 +43,5 @@ in the configured channel.
 
 Possible ideas for new features, either via chat commands or periodic updates:
 
-* ratio of 2fa uptake
 * list users who have some admin privileges but don't use 2fa
+* expand 2fa uptake report to include a per-OU breakdown
