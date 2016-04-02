@@ -20,6 +20,7 @@ module Lita
       start_max_weeks_suspended_timer
       start_no_org_unit_timer
       start_admin_activities_timer
+      start_admin_list_timer
       start_empty_groups_timer
       start_two_factor_timer
     end
@@ -30,6 +31,15 @@ module Lita
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
           list_activities(window_start, window_end)
+        end
+      end
+    end
+
+    def start_admin_list_timer
+      every_with_logged_errors(TIMER_INTERVAL) do |timer|
+        persistent_every("admin-list", weeks_in_seconds(1)) do
+          msg = AdminListMessage.new(gateway).to_msg
+          robot.send_message(target, msg) if msg
         end
       end
     end
