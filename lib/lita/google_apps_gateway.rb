@@ -1,5 +1,6 @@
 require 'lita/google_activity'
 require 'lita/google_group'
+require 'lita/google_organisation_unit'
 require 'lita/google_two_factor_user'
 require 'lita/google_user'
 require 'google/api_client'
@@ -52,6 +53,13 @@ module Lita
       @domains.map { |domain|
         groups_for_domain(domain)
       }.flatten
+    end
+
+    def organisational_units
+      result = client.execute!(api_list_orgunits, customerId: "my_customer", type: "children")
+      result.data.organization_units.map { |ou|
+        GoogleOrganisationUnit.from_api(ou)
+      }
     end
 
     # return a list of users that have Two Factor Auth enabled. Unfortunately this uses the reports
@@ -135,6 +143,10 @@ module Lita
 
     def api_list_users
       @api_list_users ||= directory_api.users.list
+    end
+
+    def api_list_orgunits
+      @api_list_orgunits ||= directory_api.orgunits.list
     end
 
     def api_user_usage

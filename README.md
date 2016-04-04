@@ -132,7 +132,6 @@ Each week, key stats on Second Factor Authentication uptake will be listed.
 
 Possible ideas for new features, either via chat commands or periodic updates:
 
-* expand 2fa uptake report to include a per-OU breakdown
 * improve format of admn activity messages
 * split admin list in to super admins and delegated admins
 * more specs
