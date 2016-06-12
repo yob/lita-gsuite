@@ -1,4 +1,5 @@
 require "lita"
+require "lita-timing"
 
 module Lita
   class Googleapps < Handler
@@ -110,11 +111,11 @@ module Lita
     end
 
     def persistent_every(name, seconds, &block)
-      PersistentEvery.new(name, redis).execute_after(seconds, &block)
+      Lita::Timing::RateLimit.new(name, redis).once_every(seconds, &block)
     end
 
     def sliding_window
-      @sliding_window ||= SlidingWindow.new("last_activity_list_at", redis)
+      @sliding_window ||= Lita::Timing::SlidingWindow.new("last_activity_list_at", redis)
     end
 
     def list_activities(window_start, window_end)
