@@ -17,7 +17,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency("pry")
   spec.add_development_dependency("rdoc")
 
-  spec.add_dependency('lita')
   spec.add_dependency('lita-timing', '~>0.1')
   spec.add_dependency('lita')
   spec.add_dependency('google-api-client', '~>0.8.0')
