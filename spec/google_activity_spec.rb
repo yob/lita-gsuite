@@ -5,14 +5,20 @@ describe Lita::GoogleActivity do
     time: Time.utc(2016, 6, 14, 2, 27, 48),
     actor: "ellie@hi.com",
     ip: "1.1.1.1",
-    name: "ADD_GROUP_MEMBER",
+    name: "Add group member",
     params: {
-      "USER_EMAIL"=>"rafael.sarralde@theconversation.com", "GROUP_EMAIL"=>"spain@theconversation.com"
+      "USER_EMAIL"=>"foo@bar.com", "GROUP_EMAIL"=>"bargroup@foo.com"
     }
   )}
   describe "#to_msg" do
     it "returns helpful string" do
-      expect(activity.to_msg).to eq '2016-06-14T02:27:48Z ellie@hi.com ADD_GROUP_MEMBER: {"USER_EMAIL"=>"rafael.sarralde@theconversation.com", "GROUP_EMAIL"=>"spain@theconversation.com"}'
+      expect(activity.to_msg).to eq(
+        <<~EOF
+          Date: Tue, 14 Jun 2016 02:27:48 GMT
+          Admin User: ellie@hi.com
+          Action: Add group member => foo@bar.com (user email) to bargroup@foo.com (group email)
+        EOF
+      )
     end
   end
 end

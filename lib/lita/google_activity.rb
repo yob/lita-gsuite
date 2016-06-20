@@ -30,7 +30,11 @@ module Lita
     end
 
     def to_msg
-      "#{@time.iso8601} #{@actor} #{@name}: #{@params.inspect}"
+      <<~EOF
+        Date: #{@time.httpdate}
+        Admin User: #{@actor}
+        Action: #{@name.capitalize.gsub('_', ' ')} => #{values}
+      EOF
     end
 
     def values
