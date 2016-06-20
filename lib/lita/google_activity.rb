@@ -32,5 +32,12 @@ module Lita
     def to_msg
       "#{@time.iso8601} #{@actor} #{@name}: #{@params.inspect}"
     end
+
+    def values
+      @params.map do |key, value|
+        "#{value} (#{key.downcase.gsub('_', ' ')})"
+      end.join(' to ')
+    end
+
   end
 end
