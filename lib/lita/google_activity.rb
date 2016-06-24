@@ -33,14 +33,15 @@ module Lita
       <<~EOF
         Date: #{@time.httpdate}
         Admin User: #{@actor}
-        Action: #{@name.capitalize.gsub('_', ' ')} => #{values}
+        Action: #{@name.capitalize.gsub('_', ' ')}
+        #{values}
       EOF
     end
 
     def values
       @params.map do |key, value|
-        "#{value} (#{key.downcase.gsub('_', ' ')})"
-      end.join(' to ')
+        "#{key.titleize.gsub('_', ' ')}: #{value}"
+      end.join("\n")
     end
 
   end
