@@ -16,7 +16,9 @@ describe Lita::GoogleActivity do
         <<~EOF
           Date: Tue, 14 Jun 2016 02:27:48 GMT
           Admin User: ellie@hi.com
-          Action: Add group member => foo@bar.com (user email) to bargroup@foo.com (group email)
+          Action: Add group member
+          User Email: foo@bar.com
+          Group Email: bargroup@foo.com
         EOF
       )
     end
