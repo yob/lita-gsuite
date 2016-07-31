@@ -38,7 +38,7 @@ module Lita
 
     def start_admin_list_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        persistent_every("admin-list", weeks_in_seconds(1)) do
+        weekly_at("01:00", :thursday, "admin-list") do
           msg = AdminListMessage.new(gateway).to_msg
           robot.send_message(target, msg) if msg
         end
@@ -47,7 +47,7 @@ module Lita
 
     def start_empty_groups_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        persistent_every("empty-groups", weeks_in_seconds(1)) do
+        weekly_at("01:00", :wednesday, "empty-groups") do
           msg = EmptyGroupsMessage.new(gateway).to_msg
           robot.send_message(target, msg) if msg
         end
@@ -58,7 +58,7 @@ module Lita
       return if config.max_weeks_without_login.to_i < 1
 
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        persistent_every("max-weeks-with-login", weeks_in_seconds(1)) do
+        weekly_at("01:00", :friday, "max-weeks-with-login") do
           msg = MaxWeeksWithoutLoginMessage.new(gateway, config.max_weeks_without_login).to_msg
           robot.send_message(target, msg) if msg
         end
@@ -69,7 +69,7 @@ module Lita
       return if config.max_weeks_suspended.to_i < 1
 
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        persistent_every("max-weeks-suspended", weeks_in_seconds(1)) do
+        weekly_at("01:00", :friday, "max-weeks-with-login") do
           msg = MaxWeeksSuspendedMessage.new(gateway, config.max_weeks_suspended).to_msg
           robot.send_message(target, msg) if msg
         end
@@ -78,7 +78,7 @@ module Lita
 
     def start_no_org_unit_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        persistent_every("no-org-unit", weeks_in_seconds(1)) do
+        weekly_at("01:00", :wednesday, "no-org-unit") do
           msg = NoOrgUnitMessage.new(gateway).to_msg
           robot.send_message(target, msg) if msg
         end
@@ -87,15 +87,11 @@ module Lita
 
     def start_two_factor_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        persistent_every("two-factor", weeks_in_seconds(1)) do
+        weekly_at("01:00", :tuesday, "two-factor") do
           msg = TwoFactorMessage.new(gateway).to_msg
           robot.send_message(target, msg) if msg
         end
       end
-    end
-
-    def weeks_in_seconds(weeks)
-      60 * 60 * 24 * 7 * weeks.to_i
     end
 
     def every_with_logged_errors(interval, &block)
@@ -110,12 +106,12 @@ module Lita
       puts "Error in timer loop: #{e.inspect}"
     end
 
-    def persistent_every(name, seconds, &block)
-      Lita::Timing::RateLimit.new(name, redis).once_every(seconds, &block)
-    end
-
     def sliding_window
       @sliding_window ||= Lita::Timing::SlidingWindow.new("last_activity_list_at", redis)
+    end
+
+    def weekly_at(time, day, name, &block)
+      Lita::Timing::Scheduled.new(name, redis).weekly_at(time, day, &block)
     end
 
     def list_activities(window_start, window_end)
