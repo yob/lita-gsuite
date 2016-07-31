@@ -53,9 +53,12 @@ module Lita
     end
 
     def percentage(num, denom)
-      (
-        BigDecimal.new(num) / BigDecimal.new(denom) * 100
-      ).round(2).to_s("F")
+      if denom == 0
+        result = BigDecimal.new(0)
+      else
+        result = BigDecimal.new(num) / BigDecimal.new(denom) * 100
+      end
+      result.round(2).to_s("F")
     end
 
     def active_users
