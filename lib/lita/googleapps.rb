@@ -69,7 +69,7 @@ module Lita
       return if config.max_weeks_suspended.to_i < 1
 
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :friday, "max-weeks-with-login") do
+        weekly_at("01:00", :friday, "max-weeks-suspended") do
           msg = MaxWeeksSuspendedMessage.new(gateway, config.max_weeks_suspended).to_msg
           robot.send_message(target, msg) if msg
         end
