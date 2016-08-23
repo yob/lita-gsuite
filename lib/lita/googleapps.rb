@@ -115,8 +115,11 @@ module Lita
     end
 
     def list_activities(window_start, window_end)
-      gateway.admin_activities(window_start, window_end).sort_by(&:time).each do |activity|
-        robot.send_message(target, activity.to_msg)
+      activities = gateway.admin_activities(window_start, window_end)
+      ativities.sort_by(&:time).map(&:to_msg).each_with_index do |message, index|
+        after(index) do
+          robot.send_message(target, message)
+        end
       end
     end
 
