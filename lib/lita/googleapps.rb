@@ -58,7 +58,7 @@ module Lita
       return if config.max_weeks_without_login.to_i < 1
 
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :friday, "max-weeks-with-login") do
+        weekly_at("01:00", :tuesday, "max-weeks-with-login") do
           msg = MaxWeeksWithoutLoginMessage.new(gateway, config.max_weeks_without_login).to_msg
           robot.send_message(target, msg) if msg
         end
@@ -69,7 +69,7 @@ module Lita
       return if config.max_weeks_suspended.to_i < 1
 
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :friday, "max-weeks-suspended") do
+        weekly_at("01:00", :tuesday, "max-weeks-suspended") do
           msg = MaxWeeksSuspendedMessage.new(gateway, config.max_weeks_suspended).to_msg
           robot.send_message(target, msg) if msg
         end
@@ -87,7 +87,7 @@ module Lita
 
     def start_two_factor_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :tuesday, "two-factor") do
+        weekly_at("01:00", :friday, "two-factor") do
           msg = TwoFactorMessage.new(gateway).to_msg
           robot.send_message(target, msg) if msg
         end
