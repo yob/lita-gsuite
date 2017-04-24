@@ -77,7 +77,6 @@ must be whitelisted before it can access any data.
      https://www.googleapis.com/auth/admin.directory.user.readonly,
      https://www.googleapis.com/auth/admin.directory.orgunit.readonly,
      https://www.googleapis.com/auth/admin.directory.group.readonly
-     https://www.googleapis.com/auth/admin.reports.usage.readonly,
      https://www.googleapis.com/auth/admin.reports.audit.readonly,
 
 6. Click authorize
