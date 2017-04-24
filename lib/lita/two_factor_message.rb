@@ -15,29 +15,11 @@ module Lita
     private
 
     def ou_msg(ou)
-      with_tfa = count_ou_users_with_tfa(ou)
-      all_users = count_ou_users(ou)
-      "- #{ou.path} #{with_tfa}/#{all_users} (#{percentage(with_tfa, all_users)}%)\n"
-    end
-
-    def count_ou_users_with_tfa(ou)
-      ou_users_with_tfa(ou).size
-    end
-
-    def ou_users_with_tfa(ou)
-      ou_users(ou).select { |user|
-        two_factor_user_emails.include?(user.email)
-      }
-    end
-
-    def count_ou_users(ou)
-      ou_users(ou).size
-    end
-
-    def ou_users(ou)
-      active_users.select { |user|
-        user.ou_path == ou.path
-      }
+      ou_users = active_users.select { |user| user.ou_path == ou.path }
+      with_tfa = ou_users.select { |user| user.two_factor_enabled? }
+      #with_tfa = count_ou_users_with_tfa(ou)
+      #all_users = count_ou_users(ou)
+      "- #{ou.path} #{with_tfa.size}/#{ou_users.size} (#{percentage(with_tfa.size, ou_users.size)}%)\n"
     end
 
     def orgunits
@@ -45,11 +27,11 @@ module Lita
     end
 
     def count_all
-      active_user_emails.size
+      active_users.size
     end
 
     def count_with_tfa
-      @count_with_tfa ||= two_factor_user_emails.size
+      @count_with_tfa ||= active_users.select { |user| user.two_factor_enabled? }.size
     end
 
     def percentage(num, denom)
@@ -64,16 +46,6 @@ module Lita
     def active_users
       @active_user ||= @gateway.users.reject { |user|
         user.suspended?
-      }
-    end
-
-    def active_user_emails
-      active_users.map(&:email)
-    end
-
-    def two_factor_user_emails
-      @tfa_user_emails ||= @gateway.two_factor_users.map(&:email).select { |email|
-        active_user_emails.include?(email)
       }
     end
 
