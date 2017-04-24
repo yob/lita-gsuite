@@ -13,21 +13,86 @@ module Lita
     config :max_weeks_without_login
     config :max_weeks_suspended
 
+    route(/^googleapps list-admins$/, :list_admins, command: true,  help: {"googleapps list-admins" => "List active admins"})
+    route(/^googleapps suspension-candidates$/, :suspension_candidates, command: true, help: {"googleapps suspension-candidates" => "List active users that habven't signed in for a while"})
+    route(/^googleapps deletion-candidates$/, :deletion_candidates, command: true,  help: {"googleapps deletion-candidates" => "List suspended users that habven't signed in for a while"})
+    route(/^googleapps no-ou$/, :no_org_unit, command: true,  help: {"googleapps no-ou" => "List users that aren't assigned to an Organisation Unit"})
+    route(/^googleapps empty-groups$/, :empty_groups, command: true,  help: {"googleapps empty-groups" => "List groups with no users"})
+    route(/^googleapps two-factor-stats$/, :two_factor_stats, command: true,  help: {"googleapps two-factor-stats" => "Display stats on option of two factor authentication"})
+
     on :loaded, :start_timers
 
     def start_timers(payload)
-      start_max_weeks_without_login_timer
-      start_max_weeks_suspended_timer
-      start_no_org_unit_timer
-      start_admin_activities_timer
-      start_admin_list_timer
-      start_empty_groups_timer
-      start_two_factor_timer
+      start_timer_list_admins
+      start_timer_suspension_candidates
+      start_timer_deletion_candidates
+      start_timer_no_org_unit
+      start_timer_admin_activities
+      start_timer_empty_groups
+      start_timer_two_factor_stats
+    end
+
+    def deletion_candidates(response)
+      return if config.max_weeks_suspended.to_i < 1
+
+      msg = MaxWeeksSuspendedMessage.new(gateway, config.max_weeks_suspended).to_msg
+      if msg
+        response.reply(msg)
+      else
+        response.reply("No users found")
+      end
+    end
+
+    def empty_groups(response)
+      msg = EmptyGroupsMessage.new(gateway).to_msg
+      if msg
+        response.reply(msg)
+      else
+        response.reply("No groups found")
+      end
+    end
+
+    def list_admins(response)
+      msg = AdminListMessage.new(gateway).to_msg
+      if msg
+        response.reply(msg)
+      else
+        response.reply("No admins found")
+      end
+    end
+
+    def no_org_unit(response)
+      msg = NoOrgUnitMessage.new(gateway).to_msg
+      if msg
+        response.reply(msg)
+      else
+        response.reply("No users found")
+      end
+    end
+
+    def suspension_candidates(response)
+      return if config.max_weeks_without_login.to_i < 1
+
+      msg = MaxWeeksWithoutLoginMessage.new(gateway, config.max_weeks_without_login).to_msg
+      if msg
+        response.reply(msg)
+      else
+        response.reply("No users found")
+      end
+    end
+
+    def two_factor_stats(response)
+      msg = TwoFactorMessage.new(gateway).to_msg
+      if msg
+        response.reply(msg)
+      else
+        response.reply("No stats found")
+      end
     end
 
     private
 
-    def start_admin_activities_timer
+    def start_timer_admin_activities
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
           list_activities(window_start, window_end)
@@ -35,7 +100,7 @@ module Lita
       end
     end
 
-    def start_admin_list_timer
+    def start_timer_list_admins
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         weekly_at("01:00", :thursday, "admin-list") do
           msg = AdminListMessage.new(gateway).to_msg
@@ -44,7 +109,7 @@ module Lita
       end
     end
 
-    def start_empty_groups_timer
+    def start_timer_empty_groups
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         weekly_at("01:00", :wednesday, "empty-groups") do
           msg = EmptyGroupsMessage.new(gateway).to_msg
@@ -53,7 +118,9 @@ module Lita
       end
     end
 
-    def start_max_weeks_without_login_timer
+    private
+
+    def start_timer_suspension_candidates
       return if config.max_weeks_without_login.to_i < 1
 
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
@@ -64,7 +131,7 @@ module Lita
       end
     end
 
-    def start_max_weeks_suspended_timer
+    def start_timer_deletion_candidates
       return if config.max_weeks_suspended.to_i < 1
 
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
@@ -75,7 +142,7 @@ module Lita
       end
     end
 
-    def start_no_org_unit_timer
+    def start_timer_no_org_unit
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         weekly_at("01:00", :wednesday, "no-org-unit") do
           msg = NoOrgUnitMessage.new(gateway).to_msg
@@ -84,7 +151,7 @@ module Lita
       end
     end
 
-    def start_two_factor_timer
+    def start_timer_two_factor_stats
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         weekly_at("01:00", :friday, "two-factor") do
           msg = TwoFactorMessage.new(gateway).to_msg
