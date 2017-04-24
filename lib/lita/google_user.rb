@@ -13,11 +13,13 @@ module Lita
         last_login_at: user.lastLoginTime,
         ou_path: user.orgUnitPath,
         admin: user.isAdmin,
-        delegated_admin: user.isDelegatedAdmin
+        delegated_admin: user.isDelegatedAdmin,
+        two_factor_enabled: user.isEnrolledIn2Sv,
+        two_factor_enforced: user.isEnforcedIn2Sv,
       )
     end
 
-    def initialize(id:, full_name:, email:, suspended:, created_at:, last_login_at:, ou_path:, admin:, delegated_admin:)
+    def initialize(id:, full_name:, email:, suspended:, created_at:, last_login_at:, ou_path:, admin:, delegated_admin:, two_factor_enabled:, two_factor_enforced:)
       @id = id
       @email = email
       @full_name = full_name
@@ -27,6 +29,8 @@ module Lita
       @ou_path = ou_path
       @admin = admin
       @delegated_admin = delegated_admin
+      @two_factor_enabled = two_factor_enabled
+      @two_factor_enforced = two_factor_enforced
     end
 
     def to_s
@@ -43,6 +47,14 @@ module Lita
 
     def suspended?
       @suspended
+    end
+
+    def two_factor_enabled?
+      @two_factor_enabled
+    end
+
+    def two_factor_enforced?
+      @two_factor_enforced
     end
 
   end
