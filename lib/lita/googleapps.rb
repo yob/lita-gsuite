@@ -8,7 +8,6 @@ module Lita
     config :service_account_email
     config :service_account_key
     config :service_account_secret
-    config :domains
     config :user_email
     config :channel_name
     config :max_weeks_without_login
@@ -132,7 +131,6 @@ module Lita
         service_account_email: config.service_account_email,
         service_account_key: config.service_account_key,
         service_account_secret: config.service_account_secret,
-        domains: config.domains,
         acting_as_email: config.user_email
       )
     end

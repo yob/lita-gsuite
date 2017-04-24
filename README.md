@@ -24,10 +24,6 @@ First, the channel to send periodic updates to:
 
     config.handlers.googleapps.channel_name = "general"
 
-Second, the domains that are in use in your google apps accounts:
-
-    config.handlers.googleapps.domains = ["example.com"]
-
 Next, an administrators email address. The API requires this, even though
 we're only make read-only requests.
 
