@@ -17,7 +17,6 @@ module Lita
   #       service_account_email: "xxx@developer.gserviceaccount.com",
   #       service_account_key: "base64 key",
   #       service_account_secret: "secret",
-  #       domains: ["example.com"],
   #       acting_as_email: "admin.user@example.com"
   #     )
   #
@@ -30,12 +29,14 @@ module Lita
       "https://www.googleapis.com/auth/admin.directory.group.readonly"
     ]
 
-    def initialize(service_account_email:, service_account_key:, service_account_secret:, domains:, acting_as_email:)
+    def initialize(service_account_email:, service_account_key:, service_account_secret:, acting_as_email:, domains: nil)
       @service_account_email = service_account_email
       @service_account_key = service_account_key
       @service_account_secret = service_account_secret
-      @domains = domains
       @acting_as_email = acting_as_email
+      if domains
+        $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the domains option"
+      end
     end
 
     def admin_activities(start_time, end_time)
@@ -50,9 +51,10 @@ module Lita
 
     # return an Array of all groups
     def groups
-      @domains.map { |domain|
-        groups_for_domain(domain)
-      }.flatten
+      result = client.execute!(api_list_groups, maxResults: 500, customer: "my_customer")
+      result.data.groups.map { |group|
+        GoogleGroup.from_api(group)
+      }
     end
 
     def organisational_units
@@ -74,26 +76,13 @@ module Lita
     end
 
     def users
-      @domains.map { |domain|
-        users_for_domain(domain)
-      }.flatten
-    end
-
-    private
-
-    def groups_for_domain(domain)
-      result = client.execute!(api_list_groups, domain: domain)
-      result.data.groups.map { |group|
-        GoogleGroup.from_api(group)
-      }
-    end
-
-    def users_for_domain(domain)
-      result = client.execute!(api_list_users, domain: domain)
+      result = client.execute!(api_list_users, maxResults: 500, customer: "my_customer")
       result.data.users.map { |user|
         GoogleUser.from_api_user(user)
       }
     end
+
+    private
 
     def four_days_ago
       (Time.now.utc - days_in_seconds(4)).strftime("%Y-%m-%d")
