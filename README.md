@@ -83,45 +83,57 @@ must be whitelisted before it can access any data.
 
 ## Chat commands
 
-This handler provides no additional chat commands.
+### Administrators
+
+List users with super or delegated administrative privileges, and their two-factor
+auth status.
+
+    lita googleapps list-admins
+
+### Empty Groups
+
+List groups with no members.
+
+    lita googleapps empty-groups
+
+### Inactive Users
+
+If the optional max\_weeks\_without\_login config is set to 1 or higher, list
+active users that haven't logged in for that many weeks.  This may be helpful
+for identifying accounts that should be suspended or deleted.
+
+    lita googleapps suspension-candidates
+
+### Suspended Users
+
+If the optional max\_weeks\_suspended config is set to 1 or higher, list
+suspended users that haven't logged in for that many weeks. This may be helpful
+for identifying accounts that have been suspended for a long time and may be
+candidates for deletion.
+
+    lita googleapps deletion-candidates
+
+### User with No Organisational Unit
+
+List users not assigned to an Organisational Unit.
+
+    lita googleapps no-ou
+
+### Two Factor Authentication
+
+Print key stats on Second Factor Authentication uptake.
+
+    lita googleapps two-factor-stats
 
 ## Periodic Updates
+
+Once per week, each of the reports listed above will automatically be sent to
+the channel specified in `config.handlers.googleapps.channel_name`.
 
 ### Admin Activity
 
 Every 30 minutes, any admin activities that have occurred to the Google Apps
 account (new user, delete user, new group, password reset, etc) will be listed.
-
-### Administrators
-
-Each week, users with super or delegated administrative privileges will be
-listed.
-
-### Empty Groups
-
-Each week, groups with no members will be listed.
-
-### Inactive Users
-
-If the optional max\_weeks\_without\_login config is set to 1 or higher, each
-week active users that haven't logged in for that many weeks will be listed.
-This may be helpful for identifying accounts that should be suspended or
-deleted.
-
-### Suspended Users
-
-If the optional max\_weeks\_suspended config is set to 1 or higher, each
-week suspended users that haven't logged in for that many weeks will be listed. This may
-be helpful for identifying accounts that have been suspended for a long time and
-may be candidates for deletion.
-
-### User with No Organisational Unit
-
-Each week, users not assigned to an Organisational Unit will be listed.
-
-### Second Factor Authentication
-
-Each week, key stats on Second Factor Authentication uptake will be listed.
 
 ## TODO
 
