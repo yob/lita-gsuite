@@ -40,7 +40,7 @@ module Lita
 
     def values
       @params.map do |key, value|
-        "#{key.titleize.gsub('_', ' ')}: #{value}"
+        "#{key.gsub('_', ' ')}: #{value}"
       end.join("\n")
     end
 
