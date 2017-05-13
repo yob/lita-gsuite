@@ -9,7 +9,7 @@ module Lita
         email: group.email,
         name: group.name,
         description: group.description,
-        member_count: group.directMembersCount,
+        member_count: group.direct_members_count,
       )
     end
 

@@ -7,15 +7,15 @@ module Lita
       GoogleUser.new(
         id: user.id,
         full_name: user.name.full_name,
-        email: user.primaryEmail,
+        email: user.primary_email,
         suspended: user.suspended,
         created_at: user.creation_time,
-        last_login_at: user.lastLoginTime,
-        ou_path: user.orgUnitPath,
-        admin: user.isAdmin,
-        delegated_admin: user.isDelegatedAdmin,
-        two_factor_enabled: user.isEnrolledIn2Sv,
-        two_factor_enforced: user.isEnforcedIn2Sv,
+        last_login_at: user.last_login_time,
+        ou_path: user.org_unit_path,
+        admin: user.is_admin,
+        delegated_admin: user.is_delegated_admin,
+        two_factor_enabled: user.is_enrolled_in2_sv,
+        two_factor_enforced: user.is_enforced_in2_sv,
       )
     end
 

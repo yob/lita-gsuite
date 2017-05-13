@@ -8,6 +8,7 @@ module Lita
     config :service_account_email
     config :service_account_key
     config :service_account_secret
+    config :service_account_json
     config :user_email
     config :channel_name
     config :max_weeks_without_login
@@ -195,9 +196,7 @@ module Lita
 
     def gateway
       @gateway ||= Lita::GoogleAppsGateway.new(
-        service_account_email: config.service_account_email,
-        service_account_key: config.service_account_key,
-        service_account_secret: config.service_account_secret,
+        service_account_json: config.service_account_json,
         acting_as_email: config.user_email
       )
     end

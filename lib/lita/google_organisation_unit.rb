@@ -5,7 +5,7 @@ module Lita
 
     def self.from_api(item)
       GoogleOrganisationUnit.new(
-        name: item.name, path: item.orgUnitPath
+        name: item.name, path: item.org_unit_path
       )
     end
 
