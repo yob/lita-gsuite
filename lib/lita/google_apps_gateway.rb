@@ -2,7 +2,8 @@ require 'lita/google_activity'
 require 'lita/google_group'
 require 'lita/google_organisation_unit'
 require 'lita/google_user'
-require 'google/api_client'
+require 'google/apis/admin_directory_v1'
+require 'google/apis/admin_reports_v1'
 
 module Lita
   # Wrapper class for interacting with the google apps directory API. Use
@@ -13,9 +14,7 @@ module Lita
   # Usage:
   #
   #     gateway = GoogleAppsGateway.new(
-  #       service_account_email: "xxx@developer.gserviceaccount.com",
-  #       service_account_key: "base64 key",
-  #       service_account_secret: "secret",
+  #       service_account_json: '{"foo":"bar"}',
   #       acting_as_email: "admin.user@example.com"
   #     )
   #
@@ -27,37 +26,41 @@ module Lita
       "https://www.googleapis.com/auth/admin.directory.group.readonly"
     ]
 
-    def initialize(service_account_email:, service_account_key:, service_account_secret:, acting_as_email:, domains: nil)
-      @service_account_email = service_account_email
-      @service_account_key = service_account_key
-      @service_account_secret = service_account_secret
+    def initialize(acting_as_email:, service_account_json:, service_account_email: nil, service_account_key: nil, service_account_secret: nil, domains: nil)
+      @service_account_json = service_account_json
       @acting_as_email = acting_as_email
+      if service_account_email
+        $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the service_account_email, option"
+      end
+      if service_account_key
+        $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the service_account_key, option"
+      end
+      if service_account_secret
+        $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the service_account_secret, option"
+      end
       if domains
         $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the domains option"
       end
     end
 
     def admin_activities(start_time, end_time)
-      result = client.execute!(api_admin_activity, userKey: "all",
-                                                   startTime: start_time.iso8601,
-                                                   endTime: end_time.iso8601,
-                                                   applicationName: "admin")
-      result.data.items.map { |item|
+      data = reports_service.list_activities("all", "admin", start_time: start_time.iso8601, end_time: end_time.iso8601)
+      data.items.map { |item|
         GoogleActivity.from_api(item)
       }.flatten
     end
 
     # return an Array of all groups
     def groups
-      result = client.execute!(api_list_groups, maxResults: 500, customer: "my_customer")
-      result.data.groups.map { |group|
+      data = directory_service.list_groups(max_results: 500, customer: "my_customer")
+      data.groups.map { |group|
         GoogleGroup.from_api(group)
       }
     end
 
     def organisational_units
-      result = client.execute!(api_list_orgunits, customerId: "my_customer", type: "children")
-      result.data.organization_units.map { |ou|
+      data = directory_service.list_org_units("my_customer", type: "children")
+      data.organization_units.map { |ou|
         GoogleOrganisationUnit.from_api(ou)
       }
     end
@@ -85,60 +88,32 @@ module Lita
     private
 
     def list_users(query = nil)
-      result = client.execute!(api_list_users, maxResults: 500, customer: "my_customer", query: query)
-      result.data.users.map { |user|
+      data = directory_service.list_users(max_results: 500, customer: "my_customer", query: query)
+      data.users.map { |user|
         GoogleUser.from_api_user(user)
       }
     end
 
-    def client
-      @client ||= Google::APIClient.new(
-        authorization: google_authorization,
-        application_name: "lita-googleapps",
-        application_version: "0.1"
-      )
-    end
-
     def google_authorization
-      authorization = Signet::OAuth2::Client.new(
-        token_credential_uri: 'https://accounts.google.com/o/oauth2/token',
-        audience: 'https://accounts.google.com/o/oauth2/token',
-        scope: OAUTH_SCOPES.join(" "),
-        issuer: @service_account_email,
-        person: @acting_as_email,
-        signing_key: api_key
-      )
-      authorization.fetch_access_token!
-      authorization
+			authorization = Google::Auth::ServiceAccountCredentials.make_creds(
+        "json_key_io": StringIO.new(@service_account_json),
+        "scope": OAUTH_SCOPES.join(" ")
+			)
+      authorization.sub = @acting_as_email
+			authorization.fetch_access_token!
+			authorization
     end
 
-    def api_key
-      return if @service_account_key.nil?
-
-      @api_key ||= Google::APIClient::KeyUtils.load_from_pkcs12(
-        Base64.decode64(@service_account_key),
-        @service_account_secret
-      )
+    def directory_service
+      @directory_service ||= Google::Apis::AdminDirectoryV1::DirectoryService.new.tap { |service|
+        service.authorization = google_authorization
+      }
     end
 
-    def directory_api
-      @api ||= client.discovered_api('admin','directory_v1')
-    end
-
-    def api_list_groups
-      @api_list_groups ||= directory_api.groups.list
-    end
-
-    def api_list_users
-      @api_list_users ||= directory_api.users.list
-    end
-
-    def api_list_orgunits
-      @api_list_orgunits ||= directory_api.orgunits.list
-    end
-
-    def api_admin_activity
-      @api_user_activity ||= client.discovered_api('admin', 'reports_v1').activities.list
+    def reports_service
+      @reports_service ||= Google::Apis::AdminReportsV1::ReportsService.new.tap { |service|
+        service.authorization = google_authorization
+      }
     end
 
   end

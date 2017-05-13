@@ -29,12 +29,11 @@ we're only make read-only requests.
 
     config.handlers.googleapps.user_email = ENV["GOOGLE_USER_EMAIL"]
 
-There's 3 values required for authentication. See "Authentication" below for more
+There's a number of values required for authentication, and the easiest way to
+provide them is via a JSON blob that google provides. See "Authentication" below for more
 details on these values.
 
-    config.handlers.googleapps.service_account_email = ENV["GOOGLE_SERVICE_ACCOUNT_EMAIL"]
-    config.handlers.googleapps.service_account_key = ENV["GOOGLE_SERVICE_ACCOUNT_KEY"]
-    config.handlers.googleapps.service_account_secret = ENV["GOOGLE_SERVICE_ACCOUNT_SECRET"]
+    config.handlers.googleapps.service_account_json = ENV["GOOGLE_SERVICE_ACCOUNT_JSON"]
 
 Finally, there's two optional settings that configure how long user accounts
 can be inactive before being flagged.
@@ -49,19 +48,11 @@ requires a "Service Account". These can be created on the [Google Developers
 Console](https://console.developers.google.com/), and Google has [some
 documentation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#creatinganaccount).
 
-Note the "Service account ID", and use it as the "service\_account\_email" config value.
-
 You should also be given the opportunity to create a new private key. Be sure to select
-the "P12" format. Save it to a file called "google.key", and then run the following
-command:
+the "JSON" format. Save it to a file called "google.json".
 
-    ruby -rbase64 -e "puts Base64.encode64(File.read('google.key'))" > google-base64.key
-
-The content of google-base64.key should be used for the "service\_account\_key"
+The content of google.json should then be used for the "service\_account\_json"
 config value.
-
-Finally, you should be provided with an automatically generated password that
-can be used for the "service\_account\_secret" config value.
 
 ## Enable Google API
 
