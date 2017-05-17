@@ -20,6 +20,7 @@ module Lita
     route(/^googleapps no-ou$/, :no_org_unit, command: true,  help: {"googleapps no-ou" => "List users that aren't assigned to an Organisation Unit"})
     route(/^googleapps empty-groups$/, :empty_groups, command: true,  help: {"googleapps empty-groups" => "List groups with no users"})
     route(/^googleapps two-factor-stats$/, :two_factor_stats, command: true,  help: {"googleapps two-factor-stats" => "Display stats on option of two factor authentication"})
+    route(/^googleapps two-factor-off (.+)$/, :two_factor_off, command: true,  help: {"googleapps two-factor-off <OU path>" => "List users from the OU path with two factor authentication off"})
 
     on :loaded, :start_timers
 
@@ -75,6 +76,16 @@ module Lita
       return if config.max_weeks_without_login.to_i < 1
 
       msg = MaxWeeksWithoutLoginMessage.new(gateway, config.max_weeks_without_login).to_msg
+      if msg
+        response.reply(msg)
+      else
+        response.reply("No users found")
+      end
+    end
+
+    def two_factor_off(response)
+      ou_path = response.match_data[1].to_s
+      msg = TwoFactorOffMessage.new(gateway, ou_path).to_msg
       if msg
         response.reply(msg)
       else
