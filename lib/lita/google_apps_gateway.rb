@@ -45,7 +45,8 @@ module Lita
 
     def admin_activities(start_time, end_time)
       data = reports_service.list_activities("all", "admin", start_time: start_time.iso8601, end_time: end_time.iso8601)
-      data.items.map { |item|
+      activities = data.items || []
+      activities.map { |item|
         GoogleActivity.from_api(item)
       }.flatten
     end
