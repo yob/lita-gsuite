@@ -26,7 +26,7 @@ module Lita
     end
 
     def max_weeks_suspended_ago
-      @max_weeks_suspended_ago ||= Time.now.utc - weeks_in_seconds(@max_weeks_suspended)
+      @max_weeks_suspended_ago ||= (Time.now.utc - weeks_in_seconds(@max_weeks_suspended)).to_datetime
     end
 
     def weeks_in_seconds(weeks)

@@ -26,7 +26,7 @@ module Lita
     end
 
     def max_weeks_without_login_ago
-      @max_weeks_without_login_ago ||= Time.now.utc - weeks_in_seconds(@max_weeks_without_login)
+      @max_weeks_without_login_ago ||= (Time.now.utc - weeks_in_seconds(@max_weeks_without_login)).to_datetime
     end
 
     def weeks_in_seconds(weeks)
