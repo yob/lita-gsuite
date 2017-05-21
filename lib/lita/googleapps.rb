@@ -28,13 +28,8 @@ module Lita
     on :loaded, :start_timers
 
     def start_timers(payload)
-      start_timer_list_admins
-      start_timer_suspension_candidates
-      start_timer_deletion_candidates
-      start_timer_no_org_unit
-      start_timer_admin_activities
-      start_timer_empty_groups
-      start_timer_two_factor_stats
+      weekly_commands_timer
+      window_commands_timer
     end
 
     def deletion_candidates(response)
@@ -139,7 +134,7 @@ module Lita
     def confirm_user_authenticated(response)
       credentials = google_credentials_for_user(response.user)
       if credentials.nil?
-        response.reply("#{response.user.name} not authorized with Google yet. Use the 'googleapps auth' command to initiate authorization") 
+        response.reply("#{response.user.name} not authorized with Google yet. Use the 'googleapps auth' command to initiate authorization")
         false
       else
         true
@@ -161,72 +156,190 @@ module Lita
       end
     end
 
-    def start_timer_admin_activities
+    def weekly_commands_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        sliding_window.advance(duration_minutes: 30, buffer_minutes: 30) do |window_start, window_end|
-          list_activities(window_start, window_end)
+        weekly_commands.each do |cmd|
+          weekly_at(cmd.time, cmd.day, cmd.name) do
+            target = Source.new(room: Lita::Room.find_by_name(cmd.room_name) || "general")
+            user = Lita::User.find_by_id(cmd.user_id)
+            cmd.run(robot, target, gateway(user))
+          end
         end
       end
     end
 
-    def start_timer_list_admins
+    def window_commands_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :thursday, "admin-list") do
-          msg = AdminListMessage.new(gateway).to_msg
-          robot.send_message(target, msg) if msg
+        window_commands.each do |cmd|
+          target = Source.new(room: Lita::Room.find_by_name(cmd.room_name) || "general")
+          user = Lita::User.find_by_id(cmd.user_id)
+          sliding_window ||= Lita::Timing::SlidingWindow.new(cmd.name, redis)
+          sliding_window.advance(duration_minutes: cmd.duration_minutes, buffer_minutes: cmd.buffer_minutes) do |window_start, window_end|
+            cmd.run(robot, target, gateway(user), window_start, window_end)
+          end
         end
       end
     end
 
-    def start_timer_empty_groups
-      every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :wednesday, "empty-groups") do
-          msg = EmptyGroupsMessage.new(gateway).to_msg
-          robot.send_message(target, msg) if msg
+    class ListAdminsCommand
+      attr_reader :room_name, :user_id, :day, :time
+
+      def initialize(room_name:, user_id:, day:, time:)
+        @room_name, @user_id = room_name, user_id
+        @day, @time = day, time
+      end
+
+      def name
+        'admin-list'
+      end
+
+      def run(robot, target, gateway)
+        msg = AdminListMessage.new(gateway).to_msg
+        robot.send_message(target, msg) if msg
+      end
+    end
+
+
+    class EmptyGroupsCommand
+      attr_reader :room_name, :user_id, :day, :time
+
+      def initialize(room_name:, user_id:, day:, time:)
+        @room_name, @user_id = room_name, user_id
+        @day, @time = day, time
+      end
+
+      def name
+        'empty-groups'
+      end
+
+      def run(robot, target, gateway)
+        msg = EmptyGroupsMessage.new(gateway).to_msg
+        robot.send_message(target, msg) if msg
+      end
+    end
+
+    class NoOrgUnitCommand
+      attr_reader :room_name, :user_id, :day, :time
+
+      def initialize(room_name:, user_id:, day:, time:)
+        @room_name, @user_id = room_name, user_id
+        @day, @time = day, time
+      end
+
+      def name
+        'no-org-unit'
+      end
+
+      def run(robot, target, gateway)
+        msg = NoOrgUnitMessage.new(gateway).to_msg
+        robot.send_message(target, msg) if msg
+      end
+    end
+
+    class TwoFactorStatsCommand
+      attr_reader :room_name, :user_id, :day, :time
+
+      def initialize(room_name:, user_id:, day:, time:)
+        @room_name, @user_id = room_name, user_id
+        @day, @time = day, time
+      end
+
+      def name
+        'two-factor'
+      end
+
+      def run(robot, target, gateway)
+        msg = TwoFactorMessage.new(gateway).to_msg
+        robot.send_message(target, msg) if msg
+      end
+    end
+
+    class SuspensionCandidatesCommand
+      attr_reader :room_name, :user_id, :day, :time
+
+      def initialize(room_name:, user_id:, day:, time:, max_weeks_without_login:)
+        @room_name, @user_id = room_name, user_id
+        @day, @time = day, time
+        @max_weeks_without_login = max_weeks_without_login.to_i
+      end
+
+      def name
+        'max-weeks-with-login'
+      end
+
+      def run(robot, target, gateway)
+        return if @max_weeks_without_login < 1
+
+        msg = MaxWeeksWithoutLoginMessage.new(gateway, @max_weeks_without_login).to_msg
+        robot.send_message(target, msg) if msg
+      end
+    end
+
+    class DeletionCandidatesCommand
+      attr_reader :room_name, :user_id, :day, :time
+
+      def initialize(room_name:, user_id:, day:, time:, max_weeks_suspended:)
+        @room_name, @user_id = room_name, user_id
+        @day, @time = day, time
+        @max_weeks_suspended = max_weeks_suspended.to_i
+      end
+
+      def name
+        'max-weeks-suspended'
+      end
+
+      def run(robot, target, gateway)
+        return if @max_weeks_suspended < 1
+
+        msg = MaxWeeksSuspendedMessage.new(gateway, @max_weeks_suspended).to_msg
+        robot.send_message(target, msg) if msg
+      end
+    end
+
+    class ListActivitiesCommand
+      attr_reader :room_name, :user_id, :day, :time
+
+      def initialize(room_name:, user_id:)
+        @room_name, @user_id = room_name, user_id
+      end
+
+      def name
+        'last_activity_list_at'
+      end
+
+      def duration_minutes
+        30
+      end
+
+      def buffer_minutes
+        30
+      end
+
+      def run(robot, target, gateway, window_start, window_end)
+        puts "run: #{window_start} #{window_end}"
+        activities = gateway.admin_activities(window_start, window_end)
+        activities.sort_by(&:time).map(&:to_msg).each_with_index do |message, index|
+          robot.send_message(target, message)
+          sleep(1) # TODO ergh. required to stop slack disconnecting us for high sending rates
         end
       end
     end
 
-    private
-
-    def start_timer_suspension_candidates
-      return if config.max_weeks_without_login.to_i < 1
-
-      every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :tuesday, "max-weeks-with-login") do
-          msg = MaxWeeksWithoutLoginMessage.new(gateway, config.max_weeks_without_login).to_msg
-          robot.send_message(target, msg) if msg
-        end
-      end
+    def weekly_commands
+      [
+        EmptyGroupsCommand.new(room_name: "google-admin", user_id: "1", day: :wednesday, time: "01:00"),
+        ListAdminsCommand.new(room_name: "google-admin", user_id: "1", day: :thursday, time: "01:00"),
+        NoOrgUnitCommand.new(room_name: "google-admin", user_id: "1", day: :wednesday, time: "01:00"),
+        TwoFactorStatsCommand.new(room_name: "google-admin", user_id: "1", day: :friday, time: "01:00"),
+        SuspensionCandidatesCommand.new(room_name: "google-admin", user_id: "1", day: :tuesday, time: "01:00", max_weeks_without_login: config.max_weeks_without_login),
+        DeletionCandidatesCommand.new(room_name: "google-admin", user_id: "1", day: :tuesday, time: "01:00", max_weeks_suspended: config.max_weeks_suspended),
+      ]
     end
 
-    def start_timer_deletion_candidates
-      return if config.max_weeks_suspended.to_i < 1
-
-      every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :tuesday, "max-weeks-suspended") do
-          msg = MaxWeeksSuspendedMessage.new(gateway, config.max_weeks_suspended).to_msg
-          robot.send_message(target, msg) if msg
-        end
-      end
-    end
-
-    def start_timer_no_org_unit
-      every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :wednesday, "no-org-unit") do
-          msg = NoOrgUnitMessage.new(gateway).to_msg
-          robot.send_message(target, msg) if msg
-        end
-      end
-    end
-
-    def start_timer_two_factor_stats
-      every_with_logged_errors(TIMER_INTERVAL) do |timer|
-        weekly_at("01:00", :friday, "two-factor") do
-          msg = TwoFactorMessage.new(gateway).to_msg
-          robot.send_message(target, msg) if msg
-        end
-      end
+    def window_commands
+      [
+        ListActivitiesCommand.new(room_name: "google-admin", user_id: "1"),
+      ]
     end
 
     def every_with_logged_errors(interval, &block)
@@ -241,21 +354,8 @@ module Lita
       puts "Error in timer loop: #{e.inspect}"
     end
 
-    def sliding_window
-      @sliding_window ||= Lita::Timing::SlidingWindow.new("last_activity_list_at", redis)
-    end
-
     def weekly_at(time, day, name, &block)
       Lita::Timing::Scheduled.new(name, redis).weekly_at(time, day, &block)
-    end
-
-    def list_activities(window_start, window_end)
-      activities = gateway.admin_activities(window_start, window_end)
-      activities.sort_by(&:time).map(&:to_msg).each_with_index do |message, index|
-        after(index) do
-          robot.send_message(target, message)
-        end
-      end
     end
 
     def target
