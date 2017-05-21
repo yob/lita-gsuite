@@ -14,9 +14,12 @@ module Lita
   # Usage:
   #
   #     gateway = GoogleAppsGateway.new(
-  #       service_account_json: '{"foo":"bar"}',
-  #       acting_as_email: "admin.user@example.com"
+  #       user_authorization: auth
   #     )
+  #
+  # The user_authorization argument should be an auth object generated
+  # the googleauth gem - check its documentation for more details on the
+  # ways to build one of these objects.
   #
   class GoogleAppsGateway
     OAUTH_SCOPES = [
@@ -26,21 +29,8 @@ module Lita
       "https://www.googleapis.com/auth/admin.directory.group.readonly"
     ]
 
-    def initialize(acting_as_email:, service_account_json:, service_account_email: nil, service_account_key: nil, service_account_secret: nil, domains: nil)
-      @service_account_json = service_account_json
-      @acting_as_email = acting_as_email
-      if service_account_email
-        $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the service_account_email, option"
-      end
-      if service_account_key
-        $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the service_account_key, option"
-      end
-      if service_account_secret
-        $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the service_account_secret, option"
-      end
-      if domains
-        $stderr.puts "WARN: GoogleAppsGateway.new no longer requires the domains option"
-      end
+    def initialize(user_authorization: nil)
+      @user_authorization = user_authorization
     end
 
     def admin_activities(start_time, end_time)
@@ -95,25 +85,15 @@ module Lita
       }
     end
 
-    def google_authorization
-			authorization = Google::Auth::ServiceAccountCredentials.make_creds(
-        "json_key_io": StringIO.new(@service_account_json),
-        "scope": OAUTH_SCOPES.join(" ")
-			)
-      authorization.sub = @acting_as_email
-			authorization.fetch_access_token!
-			authorization
-    end
-
     def directory_service
       @directory_service ||= Google::Apis::AdminDirectoryV1::DirectoryService.new.tap { |service|
-        service.authorization = google_authorization
+        service.authorization = @user_authorization
       }
     end
 
     def reports_service
       @reports_service ||= Google::Apis::AdminReportsV1::ReportsService.new.tap { |service|
-        service.authorization = google_authorization
+        service.authorization = @user_authorization
       }
     end
 

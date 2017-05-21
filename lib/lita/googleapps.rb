@@ -1,15 +1,15 @@
 require "lita"
 require "lita-timing"
+require 'googleauth'
+require 'googleauth/stores/redis_token_store'
 
 module Lita
   class Googleapps < Handler
     TIMER_INTERVAL = 60
+    OOB_OAUTH_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
-    config :service_account_email
-    config :service_account_key
-    config :service_account_secret
-    config :service_account_json
-    config :user_email
+    config :oauth_client_id
+    config :oauth_client_secret
     config :channel_name
     config :max_weeks_without_login
     config :max_weeks_suspended
@@ -21,6 +21,9 @@ module Lita
     route(/^googleapps empty-groups$/, :empty_groups, command: true,  help: {"googleapps empty-groups" => "List groups with no users"})
     route(/^googleapps two-factor-stats$/, :two_factor_stats, command: true,  help: {"googleapps two-factor-stats" => "Display stats on option of two factor authentication"})
     route(/^googleapps two-factor-off (.+)$/, :two_factor_off, command: true,  help: {"googleapps two-factor-off <OU path>" => "List users from the OU path with two factor authentication off"})
+
+    route(/^googleapps auth$/, :start_auth, command: true)
+    route(/^googleapps set-token (.+)$/, :set_token, command: true)
 
     on :loaded, :start_timers
 
@@ -35,9 +38,10 @@ module Lita
     end
 
     def deletion_candidates(response)
+      return unless confirm_user_authenticated(response)
       return if config.max_weeks_suspended.to_i < 1
 
-      msg = MaxWeeksSuspendedMessage.new(gateway, config.max_weeks_suspended).to_msg
+      msg = MaxWeeksSuspendedMessage.new(gateway(response.user), config.max_weeks_suspended).to_msg
       if msg
         response.reply(msg)
       else
@@ -46,7 +50,9 @@ module Lita
     end
 
     def empty_groups(response)
-      msg = EmptyGroupsMessage.new(gateway).to_msg
+      return unless confirm_user_authenticated(response)
+
+      msg = EmptyGroupsMessage.new(gateway(response.user)).to_msg
       if msg
         response.reply(msg)
       else
@@ -55,7 +61,9 @@ module Lita
     end
 
     def list_admins(response)
-      msg = AdminListMessage.new(gateway).to_msg
+      return unless confirm_user_authenticated(response)
+
+      msg = AdminListMessage.new(gateway(response.user)).to_msg
       if msg
         response.reply(msg)
       else
@@ -64,7 +72,9 @@ module Lita
     end
 
     def no_org_unit(response)
-      msg = NoOrgUnitMessage.new(gateway).to_msg
+      return unless confirm_user_authenticated(response)
+
+      msg = NoOrgUnitMessage.new(gateway(response.user)).to_msg
       if msg
         response.reply(msg)
       else
@@ -73,9 +83,10 @@ module Lita
     end
 
     def suspension_candidates(response)
+      return unless confirm_user_authenticated(response)
       return if config.max_weeks_without_login.to_i < 1
 
-      msg = MaxWeeksWithoutLoginMessage.new(gateway, config.max_weeks_without_login).to_msg
+      msg = MaxWeeksWithoutLoginMessage.new(gateway(response.user), config.max_weeks_without_login).to_msg
       if msg
         response.reply(msg)
       else
@@ -84,8 +95,10 @@ module Lita
     end
 
     def two_factor_off(response)
+      return unless confirm_user_authenticated(response)
+
       ou_path = response.match_data[1].to_s
-      msg = TwoFactorOffMessage.new(gateway, ou_path).to_msg
+      msg = TwoFactorOffMessage.new(gateway(response.user), ou_path).to_msg
       if msg
         response.reply(msg)
       else
@@ -94,7 +107,9 @@ module Lita
     end
 
     def two_factor_stats(response)
-      msg = TwoFactorMessage.new(gateway).to_msg
+      return unless confirm_user_authenticated(response)
+
+      msg = TwoFactorMessage.new(gateway(response.user)).to_msg
       if msg
         response.reply(msg)
       else
@@ -102,7 +117,49 @@ module Lita
       end
     end
 
+    def start_auth(response)
+      credentials = google_credentials_for_user(response.user)
+      url = google_authorizer.get_authorization_url(base_url: OOB_OAUTH_URI)
+      if credentials.nil?
+        response.reply "Open the following URL in your browser and enter the resulting code via the 'googleapps set-token <foo>' command:\n\n#{url}"
+      else
+        response.reply "#{response.user.name} is already authorized with Google. To re-authorize, open the following URL in your browser and enter the resulting code via the 'googleapps set-token <foo>' command:\n\n#{url}"
+      end
+    end
+
+    def set_token(response)
+      auth_code = response.match_data[1].to_s
+
+      google_authorizer.get_and_store_credentials_from_code(user_id: response.user.id, code: auth_code, base_url: OOB_OAUTH_URI)
+      response.reply("#{response.user.name} now authorized")
+    end
+
     private
+
+    def confirm_user_authenticated(response)
+      credentials = google_credentials_for_user(response.user)
+      if credentials.nil?
+        response.reply("#{response.user.name} not authorized with Google yet. Use the 'googleapps auth' command to initiate authorization") 
+        false
+      else
+        true
+      end
+    end
+
+    def google_credentials_for_user(user)
+      google_authorizer.get_credentials(user.id)
+    end
+
+    def google_authorizer
+      @google_authorizer ||= begin
+        client_id = Google::Auth::ClientId.new(
+          config.oauth_client_id,
+          config.oauth_client_secret
+        )
+        token_store = Google::Auth::Stores::RedisTokenStore.new(redis: redis)
+        Google::Auth::UserAuthorizer.new(client_id, GoogleAppsGateway::OAUTH_SCOPES, token_store)
+      end
+    end
 
     def start_timer_admin_activities
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
@@ -205,10 +262,9 @@ module Lita
       Source.new(room: Lita::Room.find_by_name(config.channel_name) || "general")
     end
 
-    def gateway
-      @gateway ||= Lita::GoogleAppsGateway.new(
-        service_account_json: config.service_account_json,
-        acting_as_email: config.user_email
+    def gateway(user)
+      Lita::GoogleAppsGateway.new(
+        user_authorization: google_authorizer.get_credentials(user.id)
       )
     end
 
