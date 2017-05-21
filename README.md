@@ -24,16 +24,15 @@ First, the channel to send periodic updates to:
 
     config.handlers.googleapps.channel_name = "general"
 
-Next, an administrators email address. The API requires this, even though
-we're only make read-only requests.
+When an API call to google is required, we want to make it with tokens that
+are tied to the specific user that requested data. To do so, we use Google's
+OAuth2 support.
 
-    config.handlers.googleapps.user_email = ENV["GOOGLE_USER_EMAIL"]
+That requires an OAuth2 client ID and secret - see "Authentication" below for more
+details on how to generate these:
 
-There's a number of values required for authentication, and the easiest way to
-provide them is via a JSON blob that google provides. See "Authentication" below for more
-details on these values.
-
-    config.handlers.googleapps.service_account_json = ENV["GOOGLE_SERVICE_ACCOUNT_JSON"]
+    config.handlers.googleapps.oauth_client_id = ENV["GOOGLE_CLIENT_ID"]
+    config.handlers.googleapps.oauth_client_secret = ENV["GOOGLE_CLIENT_SECRET"]
 
 Finally, there's two optional settings that configure how long user accounts
 can be inactive before being flagged.
@@ -43,16 +42,20 @@ can be inactive before being flagged.
 
 ## Authentication
 
-The lita handler will be connecting to Google APIs on your behalf, which
-requires a "Service Account". These can be created on the [Google Developers
+The lita bot requires an OAuth client ID and secret before it can initiate
+the process to generate an OAuth2 token for each user.
+
+These can be created on the [Google Developers
 Console](https://console.developers.google.com/), and Google has [some
-documentation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#creatinganaccount).
+documentation](https://developers.google.com/identity/protocols/OAuth2).
 
-You should also be given the opportunity to create a new private key. Be sure to select
-the "JSON" format. Save it to a file called "google.json".
+You should be given the opportunity to copy the new ID and secret. Be sure to copy them
+down, as they can't be retrieved again later.
 
-The content of google.json should then be used for the "service\_account\_json"
-config value.
+Once the handler is configured and running, each user that wants to interact with it
+will be prompted to complete an OAuth authorisation process before they can start. This
+generates an API token that's specific to them and will be used to make API calls on
+their behalf.
 
 ## Enable Google API
 
