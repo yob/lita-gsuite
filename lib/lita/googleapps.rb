@@ -35,57 +35,52 @@ module Lita
       return unless confirm_user_authenticated(response)
       return if config.max_weeks_suspended.to_i < 1
 
-      msg = MaxWeeksSuspendedMessage.new(gateway(response.user), config.max_weeks_suspended).to_msg
-      if msg
-        response.reply(msg)
-      else
-        response.reply("No users found")
-      end
+      DeletionCandidatesCommand.new(config.max_weeks_suspended).run_manual(
+        robot,
+        response.room,
+        gateway(response.user)
+      )
     end
 
     def empty_groups(response)
       return unless confirm_user_authenticated(response)
 
-      msg = EmptyGroupsMessage.new(gateway(response.user)).to_msg
-      if msg
-        response.reply(msg)
-      else
-        response.reply("No groups found")
-      end
+      EmptyGroupsCommand.new.run_manual(
+        robot,
+        response.room,
+        gateway(response.user)
+      )
     end
 
     def list_admins(response)
       return unless confirm_user_authenticated(response)
 
-      msg = AdminListMessage.new(gateway(response.user)).to_msg
-      if msg
-        response.reply(msg)
-      else
-        response.reply("No admins found")
-      end
+      ListAdminsCommand.new.run_manual(
+        robot,
+        response.room,
+        gateway(response.user)
+      )
     end
 
     def no_org_unit(response)
       return unless confirm_user_authenticated(response)
 
-      msg = NoOrgUnitMessage.new(gateway(response.user)).to_msg
-      if msg
-        response.reply(msg)
-      else
-        response.reply("No users found")
-      end
+      NoOrgUnitCommand.new.run_manual(
+        robot,
+        response.room,
+        gateway(response.user)
+      )
     end
 
     def suspension_candidates(response)
       return unless confirm_user_authenticated(response)
       return if config.max_weeks_without_login.to_i < 1
 
-      msg = MaxWeeksWithoutLoginMessage.new(gateway(response.user), config.max_weeks_without_login).to_msg
-      if msg
-        response.reply(msg)
-      else
-        response.reply("No users found")
-      end
+      SuspensionCandidatesCommand.new(config.max_weeks_without_login).run_manual(
+        robot,
+        response.room,
+        gateway(response.user)
+      )
     end
 
     def two_factor_off(response)
@@ -103,12 +98,11 @@ module Lita
     def two_factor_stats(response)
       return unless confirm_user_authenticated(response)
 
-      msg = TwoFactorMessage.new(gateway(response.user)).to_msg
-      if msg
-        response.reply(msg)
-      else
-        response.reply("No stats found")
-      end
+      TwoFactorStatsCommand.new.run_manual(
+        robot,
+        response.room,
+        gateway(response.user)
+      )
     end
 
     def start_auth(response)
@@ -159,7 +153,7 @@ module Lita
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         weekly_commands.each do |cmd|
           weekly_at(cmd.time, cmd.day, cmd.name) do
-            target = Source.new(room: Lita::Room.find_by_name(cmd.room_name) || "general")
+          target = Source.new(room: Lita::Room.find_by_name(cmd.room_name) || "general")
             user = Lita::User.find_by_id(cmd.user_id)
             cmd.run(robot, target, gateway(user))
           end
@@ -181,12 +175,6 @@ module Lita
     end
 
     class ListAdminsCommand
-      attr_reader :room_name, :user_id, :day, :time
-
-      def initialize(room_name:, user_id:, day:, time:)
-        @room_name, @user_id = room_name, user_id
-        @day, @time = day, time
-      end
 
       def name
         'admin-list'
@@ -196,16 +184,18 @@ module Lita
         msg = AdminListMessage.new(gateway).to_msg
         robot.send_message(target, msg) if msg
       end
+
+      def run_manual(robot, target, gateway)
+        msg = AdminListMessage.new(gateway).to_msg
+        if msg
+          robot.send_message(target, msg) if msg
+        else
+          robot.send_message(target, "No admins found")
+        end
+      end
     end
 
-
     class EmptyGroupsCommand
-      attr_reader :room_name, :user_id, :day, :time
-
-      def initialize(room_name:, user_id:, day:, time:)
-        @room_name, @user_id = room_name, user_id
-        @day, @time = day, time
-      end
 
       def name
         'empty-groups'
@@ -215,15 +205,18 @@ module Lita
         msg = EmptyGroupsMessage.new(gateway).to_msg
         robot.send_message(target, msg) if msg
       end
+
+      def run_manual(robot, target, gateway)
+        msg = EmptyGroupsMessage.new(gateway).to_msg
+        if msg
+          robot.send_message(target, msg) if msg
+        else
+          robot.send_message(target, "No groups found")
+        end
+      end
     end
 
     class NoOrgUnitCommand
-      attr_reader :room_name, :user_id, :day, :time
-
-      def initialize(room_name:, user_id:, day:, time:)
-        @room_name, @user_id = room_name, user_id
-        @day, @time = day, time
-      end
 
       def name
         'no-org-unit'
@@ -233,15 +226,18 @@ module Lita
         msg = NoOrgUnitMessage.new(gateway).to_msg
         robot.send_message(target, msg) if msg
       end
+
+      def run_manual(robot, target, gateway)
+        msg = NoOrgUnitMessage.new(gateway).to_msg
+        if msg
+          robot.send_message(target, msg) if msg
+        else
+          robot.send_message(target, "No users are missing an org unit")
+        end
+      end
     end
 
     class TwoFactorStatsCommand
-      attr_reader :room_name, :user_id, :day, :time
-
-      def initialize(room_name:, user_id:, day:, time:)
-        @room_name, @user_id = room_name, user_id
-        @day, @time = day, time
-      end
 
       def name
         'two-factor'
@@ -251,14 +247,20 @@ module Lita
         msg = TwoFactorMessage.new(gateway).to_msg
         robot.send_message(target, msg) if msg
       end
+
+      def run_manual(robot, target, gateway)
+        msg = TwoFactorMessage.new(gateway).to_msg
+        if msg
+          robot.send_message(target, msg) if msg
+        else
+          robot.send_message(target, "No stats found")
+        end
+      end
     end
 
     class SuspensionCandidatesCommand
-      attr_reader :room_name, :user_id, :day, :time
 
-      def initialize(room_name:, user_id:, day:, time:, max_weeks_without_login:)
-        @room_name, @user_id = room_name, user_id
-        @day, @time = day, time
+      def initialize(max_weeks_without_login:)
         @max_weeks_without_login = max_weeks_without_login.to_i
       end
 
@@ -272,14 +274,20 @@ module Lita
         msg = MaxWeeksWithoutLoginMessage.new(gateway, @max_weeks_without_login).to_msg
         robot.send_message(target, msg) if msg
       end
+
+      def run_manual(robot, target, gateway)
+        msg = MaxWeeksWithoutLoginMessage.new(gateway, @max_weeks_without_login).to_msg
+        if msg
+          robot.send_message(target, msg) if msg
+        else
+          robot.send_message(target, "No users found")
+        end
+      end
     end
 
     class DeletionCandidatesCommand
-      attr_reader :room_name, :user_id, :day, :time
 
-      def initialize(room_name:, user_id:, day:, time:, max_weeks_suspended:)
-        @room_name, @user_id = room_name, user_id
-        @day, @time = day, time
+      def initialize(max_weeks_suspended:)
         @max_weeks_suspended = max_weeks_suspended.to_i
       end
 
@@ -293,14 +301,18 @@ module Lita
         msg = MaxWeeksSuspendedMessage.new(gateway, @max_weeks_suspended).to_msg
         robot.send_message(target, msg) if msg
       end
+
+      def run_manual(robot, target, gateway)
+        msg = MaxWeeksSuspendedMessage.new(gateway, @max_weeks_suspended).to_msg
+        if msg
+          robot.send_message(target, msg) if msg
+        else
+          robot.send_message(target, "No users found")
+        end
+      end
     end
 
     class ListActivitiesCommand
-      attr_reader :room_name, :user_id, :day, :time
-
-      def initialize(room_name:, user_id:)
-        @room_name, @user_id = room_name, user_id
-      end
 
       def name
         'last_activity_list_at'
@@ -324,20 +336,63 @@ module Lita
       end
     end
 
+    class WeeklySchedule
+      attr_reader :room_name, :user_id, :day, :time, :cmd
+
+      def initialize(room_name:, user_id:, day:, time:, cmd:)
+        @room_name, @user_id = room_name, user_id
+        @day, @time = day, time
+        @cmd = cmd
+      end
+
+      def name
+        @cmd.name
+      end
+
+      def run(*args)
+        @cmd.run(*args)
+      end
+    end
+
+    class WindowSchedule
+      attr_reader :room_name, :user_id, :cmd
+
+      def initialize(room_name:, user_id:, cmd:)
+        @room_name, @user_id = room_name, user_id
+        @cmd = cmd
+      end
+
+      def duration_minutes
+        @cmd.duration_minutes
+      end
+
+      def buffer_minutes
+        @cmd.buffer_minutes
+      end
+
+      def name
+        @cmd.name
+      end
+
+      def run(*args)
+        @cmd.run(*args)
+      end
+    end
+
     def weekly_commands
       [
-        EmptyGroupsCommand.new(room_name: "google-admin", user_id: "1", day: :wednesday, time: "01:00"),
-        ListAdminsCommand.new(room_name: "google-admin", user_id: "1", day: :thursday, time: "01:00"),
-        NoOrgUnitCommand.new(room_name: "google-admin", user_id: "1", day: :wednesday, time: "01:00"),
-        TwoFactorStatsCommand.new(room_name: "google-admin", user_id: "1", day: :friday, time: "01:00"),
-        SuspensionCandidatesCommand.new(room_name: "google-admin", user_id: "1", day: :tuesday, time: "01:00", max_weeks_without_login: config.max_weeks_without_login),
-        DeletionCandidatesCommand.new(room_name: "google-admin", user_id: "1", day: :tuesday, time: "01:00", max_weeks_suspended: config.max_weeks_suspended),
+        WeeklySchedule.new(day: :wednesday, time: "01:00", room_name: "google-admin", user_id: "1", cmd: EmptyGroupsCommand.new),
+        WeeklySchedule.new(day: :thursday, time: "01:00", room_name: "google-admin", user_id: "1", cmd: ListAdminsCommand.new),
+        WeeklySchedule.new(day: :wednesday, time: "01:00", room_name: "google-admin", user_id: "1", cmd: NoOrgUnitCommand.new),
+        WeeklySchedule.new(day: :friday, time: "01:00", room_name: "google-admin", user_id: "1", cmd: TwoFactorStatsCommand.new),
+        WeeklySchedule.new(day: :tuesday, time: "01:00", room_name: "google-admin", user_id: "1", cmd: SuspensionCandidatesCommand.new(max_weeks_without_login: config.max_weeks_without_login)),
+        WeeklySchedule.new(day: :tuesday, time: "01:00", room_name: "google-admin", user_id: "1", cmd: DeletionCandidatesCommand.new(max_weeks_suspended: config.max_weeks_suspended)),
       ]
     end
 
     def window_commands
       [
-        ListActivitiesCommand.new(room_name: "google-admin", user_id: "1"),
+        WindowSchedule.new(room_name: "google-admin", user_id: "1", cmd: ListActivitiesCommand.new)
       ]
     end
 
