@@ -10,7 +10,6 @@ module Lita
 
     config :oauth_client_id
     config :oauth_client_secret
-    config :channel_name
     config :max_weeks_without_login
     config :max_weeks_suspended
 
@@ -356,10 +355,6 @@ module Lita
 
     def weekly_at(time, day, name, &block)
       Lita::Timing::Scheduled.new(name, redis).weekly_at(time, day, &block)
-    end
-
-    def target
-      Source.new(room: Lita::Room.find_by_name(config.channel_name) || "general")
     end
 
     def gateway(user)
