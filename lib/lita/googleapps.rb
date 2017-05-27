@@ -267,9 +267,13 @@ module Lita
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         weekly_commands.each do |cmd|
           weekly_at(cmd.time, cmd.day, "#{cmd.id}-#{cmd.name}") do
-            target = Source.new(room: Lita::Room.find_by_name(cmd.room_name))
-            user = Lita::User.find_by_id(cmd.user_id)
-            cmd.run(robot, target, gateway(user))
+            target = Source.new(
+              room: find_room_by_name_or_general(cmd.room_name)
+            )
+            if target.room
+              user = Lita::User.find_by_id(cmd.user_id)
+              cmd.run(robot, target, gateway(user))
+            end
           end
         end
       end
@@ -278,14 +282,22 @@ module Lita
     def window_commands_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         window_commands.each do |cmd|
-          target = Source.new(room: Lita::Room.find_by_name(cmd.room_name))
-          user = Lita::User.find_by_id(cmd.user_id)
-          sliding_window ||= Lita::Timing::SlidingWindow.new("#{cmd.id}-#{cmd.name}", redis)
-          sliding_window.advance(duration_minutes: cmd.duration_minutes, buffer_minutes: cmd.buffer_minutes) do |window_start, window_end|
-            cmd.run(robot, target, gateway(user), window_start, window_end)
+          target = Source.new(
+            room: find_room_by_name_or_general(cmd.room_name)
+          )
+          if target.room
+            user = Lita::User.find_by_id(cmd.user_id)
+            sliding_window ||= Lita::Timing::SlidingWindow.new("#{cmd.id}-#{cmd.name}", redis)
+            sliding_window.advance(duration_minutes: cmd.duration_minutes, buffer_minutes: cmd.buffer_minutes) do |window_start, window_end|
+              cmd.run(robot, target, gateway(user), window_start, window_end)
+            end
           end
         end
       end
+    end
+
+    def find_room_by_name_or_general(room_name)
+      Lita::Room.find_by_name(room_name) || Lita::Room.find_by_name("general")
     end
 
     def weekly_commands_for_room(room_name)
