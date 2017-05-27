@@ -1,10 +1,10 @@
 module Lita
   class WindowSchedule
-    attr_reader :id, :room_name, :user_id, :cmd
+    attr_reader :id, :room_id, :user_id, :cmd
 
-    def initialize(id:, room_name:, user_id:, cmd:)
+    def initialize(id:, room_id:, user_id:, cmd:)
       @id = id
-      @room_name, @user_id = room_name, user_id
+      @room_id, @user_id = room_id, user_id
       @cmd = cmd.new if cmd
     end
 
@@ -29,7 +29,7 @@ module Lita
     end
 
     def valid?
-      room_name && user_id && valid_cmd?
+      room_id && user_id && valid_cmd?
     end
 
     def to_json
@@ -37,7 +37,7 @@ module Lita
         id: @id,
         cmd: @cmd.name,
         user_id: @user_id,
-        room_name: @room_name,
+        room_id: @room_id,
       }.to_json
     end
 

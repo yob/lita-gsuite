@@ -1,10 +1,10 @@
 module Lita
   class WeeklySchedule
-    attr_reader :id, :room_name, :user_id, :day, :time, :cmd
+    attr_reader :id, :room_id, :user_id, :day, :time, :cmd
 
-    def initialize(id:, room_name:, user_id:, day:, time:, cmd:)
+    def initialize(id:, room_id:, user_id:, day:, time:, cmd:)
       @id = id
-      @room_name, @user_id = room_name, user_id
+      @room_id, @user_id = room_id, user_id
       @day, @time = day.to_s.to_sym, time.to_s
       @cmd = cmd.new if cmd
     end
@@ -18,7 +18,7 @@ module Lita
     end
 
     def valid?
-      room_name && user_id && valid_day? && valid_time? && valid_cmd?
+      room_id && user_id && valid_day? && valid_time? && valid_cmd?
     end
 
     def to_json
@@ -28,7 +28,7 @@ module Lita
         time: @time,
         cmd: @cmd.name,
         user_id: @user_id,
-        room_name: @room_name,
+        room_id: @room_id,
       }.to_json
     end
 

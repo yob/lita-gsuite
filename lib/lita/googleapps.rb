@@ -152,7 +152,7 @@ module Lita
 
     def schedule_list(response)
       room_commands = (weekly_commands_for_room(response.room.name) + window_commands_for_room(response.room.name)).select { |cmd|
-        cmd.room_name == response.room.name
+        cmd.room_id == response.room.id
       }
       if room_commands.any?
         room_commands.each do |cmd|
@@ -190,7 +190,7 @@ module Lita
         time: time,
         cmd: COMMANDS.fetch(cmd_name.downcase, nil),
         user_id: response.user.id,
-        room_name: response.room.name,
+        room_id: response.room.id,
       )
       if schedule.valid?
         redis.hmset("weekly-schedule", schedule.id, schedule.to_json)
@@ -210,7 +210,7 @@ module Lita
         id: SecureRandom.hex(3),
         cmd: WINDOW_COMMANDS.fetch(cmd_name.downcase, nil),
         user_id: response.user.id,
-        room_name: response.room.name,
+        room_id: response.room.id,
       )
       if schedule.valid?
         redis.hmset("window-schedule", schedule.id, schedule.to_json)
@@ -268,12 +268,10 @@ module Lita
         weekly_commands.each do |cmd|
           weekly_at(cmd.time, cmd.day, "#{cmd.id}-#{cmd.name}") do
             target = Source.new(
-              room: find_room_by_name_or_general(cmd.room_name)
+              room: Lita::Room.create_or_update(cmd.room_id)
             )
-            if target.room
-              user = Lita::User.find_by_id(cmd.user_id)
-              cmd.run(robot, target, gateway(user))
-            end
+            user = Lita::User.find_by_id(cmd.user_id)
+            cmd.run(robot, target, gateway(user))
           end
         end
       end
@@ -283,32 +281,26 @@ module Lita
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         window_commands.each do |cmd|
           target = Source.new(
-            room: find_room_by_name_or_general(cmd.room_name)
+              room: Lita::Room.create_or_update(cmd.room_id)
           )
-          if target.room
-            user = Lita::User.find_by_id(cmd.user_id)
-            sliding_window ||= Lita::Timing::SlidingWindow.new("#{cmd.id}-#{cmd.name}", redis)
-            sliding_window.advance(duration_minutes: cmd.duration_minutes, buffer_minutes: cmd.buffer_minutes) do |window_start, window_end|
-              cmd.run(robot, target, gateway(user), window_start, window_end)
-            end
+          user = Lita::User.find_by_id(cmd.user_id)
+          sliding_window ||= Lita::Timing::SlidingWindow.new("#{cmd.id}-#{cmd.name}", redis)
+          sliding_window.advance(duration_minutes: cmd.duration_minutes, buffer_minutes: cmd.buffer_minutes) do |window_start, window_end|
+            cmd.run(robot, target, gateway(user), window_start, window_end)
           end
         end
       end
     end
 
-    def find_room_by_name_or_general(room_name)
-      Lita::Room.find_by_name(room_name) || Lita::Room.find_by_name("general")
-    end
-
-    def weekly_commands_for_room(room_name)
+    def weekly_commands_for_room(room_id)
       weekly_commands.select { |cmd|
-        cmd.room_name == room_name
+        cmd.room_id == room_id
       }
     end
 
-    def window_commands_for_room(room_name)
+    def window_commands_for_room(room_id)
       window_commands.select { |cmd|
-        cmd.room_name == room_name
+        cmd.room_id == room_id
       }
     end
 
@@ -320,7 +312,7 @@ module Lita
           id: data.fetch("id", "foo"),
           day: data.fetch("day", nil),
           time: data.fetch("time", "12:00"),
-          room_name: data.fetch("room_name", nil),
+          room_id: data.fetch("room_id", nil),
           user_id: data.fetch("user_id", nil),
           cmd: COMMANDS.fetch(data.fetch("cmd", nil), nil),
         )
@@ -335,7 +327,7 @@ module Lita
       }.map { |data|
         WindowSchedule.new(
           id: data.fetch("id", nil),
-          room_name: data.fetch("room_name", nil),
+          room_id: data.fetch("room_id", nil),
           user_id: data.fetch("user_id", nil),
           cmd: WINDOW_COMMANDS.fetch(data.fetch("cmd", nil), nil),
         )
