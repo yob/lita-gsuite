@@ -121,6 +121,8 @@ module Lita
       else
         response.reply "#{response.user.name} is already authorized with Google. To re-authorize, open the following URL in your browser and enter the resulting code via the 'googleapps set-token <foo>' command:\n\n#{url}"
       end
+    rescue StandardError => e
+      response.reply("Error: #{e.class} #{e.message}")
     end
 
     def set_token(response)
@@ -128,6 +130,8 @@ module Lita
 
       google_authorizer.get_and_store_credentials_from_code(user_id: response.user.id, code: auth_code, base_url: OOB_OAUTH_URI)
       response.reply("#{response.user.name} now authorized")
+    rescue StandardError => e
+      response.reply("Error: #{e.class} #{e.message}")
     end
 
     def schedule_list(response)
@@ -141,6 +145,8 @@ module Lita
       else
         response.reply("no scheduled commands for this room")
       end
+    rescue StandardError => e
+      response.reply("Error: #{e.class} #{e.message}")
     end
 
     def schedule_commands(response)
@@ -153,6 +159,8 @@ module Lita
         msg += "- #{cmd_name}\n"
       end
       response.reply(msg)
+    rescue StandardError => e
+      response.reply("Error: #{e.class} #{e.message}")
     end
 
     def schedule_add_weekly(response)
@@ -174,6 +182,8 @@ module Lita
       else
         response.reply("invalid command")
       end
+    rescue StandardError => e
+      response.reply("Error: #{e.class} #{e.message}")
     end
 
     def schedule_add_window(response)
@@ -192,6 +202,8 @@ module Lita
       else
         response.reply("invalid command")
       end
+    rescue StandardError => e
+      response.reply("Error: #{e.class} #{e.message}")
     end
 
     def schedule_delete(response)
@@ -206,6 +218,8 @@ module Lita
       else
         response.reply("no scheduled command with ID #{cmd_id} found")
       end
+    rescue StandardError => e
+      response.reply("Error: #{e.class} #{e.message}")
     end
 
     private
