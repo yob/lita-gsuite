@@ -39,7 +39,7 @@ module Lita
     private
 
     def valid_day?
-      [:monday, :tuesday, :wednesday, :thursday, :saturday, :sunday].include?(day)
+      [:monday, :tuesday, :wednesday, :thursday, :friday, :saturday, :sunday].include?(day)
     end
 
     def valid_time?
