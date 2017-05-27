@@ -505,12 +505,6 @@ module Lita
       }
     end
 
-    #  WeeklySchedule.new(day: :wednesday, time: "01:00", room_name: "shell", user_id: "1", cmd: EmptyGroupsCommand.new),
-    #  WeeklySchedule.new(day: :thursday, time: "01:00", room_name: "shell", user_id: "1", cmd: ListAdminsCommand.new),
-    #  WeeklySchedule.new(day: :wednesday, time: "01:00", room_name: "shell", user_id: "1", cmd: NoOrgUnitCommand.new),
-    #  WeeklySchedule.new(day: :friday, time: "01:00", room_name: "shell", user_id: "1", cmd: TwoFactorStatsCommand.new),
-    #  WeeklySchedule.new(day: :tuesday, time: "01:00", room_name: "shell", user_id: "1", cmd: SuspensionCandidatesCommand.new),
-    #  WeeklySchedule.new(day: :tuesday, time: "01:00", room_name: "shell", user_id: "1", cmd: DeletionCandidatesCommand.new),
     def weekly_commands
       redis.lrange("weekly-schedule", 0, MAX_SCHEDULES - 1).map { |data|
         JSON.parse(data)
@@ -528,7 +522,6 @@ module Lita
       }
     end
 
-    # WindowSchedule.new(id: SecureRandom.hex(3), room_name: "shell", user_id: "1", cmd: ListActivitiesCommand.new)
     def window_commands
       redis.lrange("window-schedule", 0, MAX_SCHEDULES - 1).map { |data|
         JSON.parse(data)
