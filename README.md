@@ -124,7 +124,7 @@ Schedule a weekly report in the current channel, specified in UTC time:
 
 Schedule a time-window report that will run regularly and print output when
 new data is available:
-    
+
     lita googleapps schedule add-window <report-name>
     lita googleapps schedule add-window list-activities
 
