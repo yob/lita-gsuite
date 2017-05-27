@@ -63,7 +63,7 @@ module Lita
 
       Commands::DeletionCandidates.new.run_manual(
         robot,
-        response.room,
+        Source.new(room: response.room),
         gateway(response.user)
       )
     end
@@ -73,7 +73,7 @@ module Lita
 
       Commands::EmptyGroups.new.run_manual(
         robot,
-        response.room,
+        Source.new(room: response.room),
         gateway(response.user)
       )
     end
@@ -83,7 +83,7 @@ module Lita
 
       Commands::ListAdmins.new.run_manual(
         robot,
-        response.room,
+        Source.new(room: response.room),
         gateway(response.user)
       )
     end
@@ -93,7 +93,7 @@ module Lita
 
       Commands::NoOrgUnit.new.run_manual(
         robot,
-        response.room,
+        Source.new(room: response.room),
         gateway(response.user)
       )
     end
@@ -103,7 +103,7 @@ module Lita
 
       Commands::SuspensionCandidates.new.run_manual(
         robot,
-        response.room,
+        Source.new(room: response.room),
         gateway(response.user)
       )
     end
@@ -114,7 +114,7 @@ module Lita
       ou_path = response.match_data[1].to_s
       Commands::TwoFactorOff.new(ou_path).run_manual(
         robot,
-        response.room,
+        Source.new(room: response.room),
         gateway(response.user)
       )
     end
@@ -124,7 +124,7 @@ module Lita
 
       Commands::TwoFactorStats.new.run_manual(
         robot,
-        response.room,
+        Source.new(room: response.room),
         gateway(response.user)
       )
     end
@@ -267,7 +267,7 @@ module Lita
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         weekly_commands.each do |cmd|
           weekly_at(cmd.time, cmd.day, "#{cmd.id}-#{cmd.name}") do
-          target = Source.new(room: Lita::Room.find_by_name(cmd.room_name) || "general")
+            target = Source.new(room: Lita::Room.find_by_name(cmd.room_name))
             user = Lita::User.find_by_id(cmd.user_id)
             cmd.run(robot, target, gateway(user))
           end
@@ -278,7 +278,7 @@ module Lita
     def window_commands_timer
       every_with_logged_errors(TIMER_INTERVAL) do |timer|
         window_commands.each do |cmd|
-          target = Source.new(room: Lita::Room.find_by_name(cmd.room_name) || "general")
+          target = Source.new(room: Lita::Room.find_by_name(cmd.room_name))
           user = Lita::User.find_by_id(cmd.user_id)
           sliding_window ||= Lita::Timing::SlidingWindow.new("#{cmd.id}-#{cmd.name}", redis)
           sliding_window.advance(duration_minutes: cmd.duration_minutes, buffer_minutes: cmd.buffer_minutes) do |window_start, window_end|
