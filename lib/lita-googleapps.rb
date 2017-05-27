@@ -6,6 +6,10 @@ require "lita/commands/no_org_unit"
 require "lita/commands/suspension_candidates"
 require "lita/commands/two_factor_off"
 require "lita/commands/two_factor_stats"
+
+require "lita/weekly_schedule"
+require "lita/window_schedule"
+
 require "lita/admin_list_message"
 require "lita/empty_groups_message"
 require "lita/google_apps_gateway"
