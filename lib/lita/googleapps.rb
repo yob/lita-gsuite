@@ -430,7 +430,7 @@ module Lita
       end
 
       def valid?
-        room_name && user_id && valid_day? && valid_time?
+        room_name && user_id && valid_day? && valid_time? && valid_cmd?
       end
 
       def to_json
