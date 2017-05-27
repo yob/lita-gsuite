@@ -612,13 +612,13 @@ module Lita
 
     # TODO move to the top of this class
     COMMANDS = [
-			ListAdminsCommand,
-			EmptyGroupsCommand,
-			NoOrgUnitCommand,
-			TwoFactorOffCommand,
-			TwoFactorStatsCommand,
-			SuspensionCandidatesCommand,
-			DeletionCandidatesCommand,
+      ListAdminsCommand,
+      EmptyGroupsCommand,
+      NoOrgUnitCommand,
+      TwoFactorOffCommand,
+      TwoFactorStatsCommand,
+      SuspensionCandidatesCommand,
+      DeletionCandidatesCommand,
     ].map { |cmd|
       [cmd.new.name, cmd]
     }.to_h
