@@ -89,12 +89,11 @@ module Lita
       return unless confirm_user_authenticated(response)
 
       ou_path = response.match_data[1].to_s
-      msg = TwoFactorOffMessage.new(gateway(response.user), ou_path).to_msg
-      if msg
-        response.reply(msg)
-      else
-        response.reply("No users found")
-      end
+      TwoFactorOffCommand.new(ou_path).run_manual(
+        robot,
+        response.room,
+        gateway(response.user)
+      )
     end
 
     def two_factor_stats(response)
@@ -290,6 +289,31 @@ module Lita
           robot.send_message(target, msg) if msg
         else
           robot.send_message(target, "No users are missing an org unit")
+        end
+      end
+    end
+
+    class TwoFactorOffCommand
+
+      def initialize(ou_path = "/")
+        @ou_path = ou_path
+      end
+
+      def name
+        'two-factor-off'
+      end
+
+      def run(robot, target, gateway)
+        msg = TwoFactorOffMessage.new(gateway, @ou_path).to_msg
+        robot.send_message(target, msg) if msg
+      end
+
+      def run_manual(robot, target, gateway)
+        msg = TwoFactorOffMessage.new(gateway, @ou_path).to_msg
+        if msg
+          robot.send_message(target, msg)
+        else
+          robot.send_message(target, "No users found")
         end
       end
     end
@@ -547,6 +571,7 @@ module Lita
 			ListAdminsCommand,
 			EmptyGroupsCommand,
 			NoOrgUnitCommand,
+			TwoFactorOffCommand,
 			TwoFactorStatsCommand,
 			SuspensionCandidatesCommand,
 			DeletionCandidatesCommand,
