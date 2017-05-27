@@ -132,11 +132,3 @@ Delete a scheduled report from the current room. The ID can be find in th
 output of "schedule list":
 
     lita googleapps schedule del <id>
-
-## TODO
-
-Possible ideas for new features, either via chat commands or periodic updates:
-
-* improve format of admin activity messages
-* split admin list in to super admins and delegated admins
-* more specs

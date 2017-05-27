@@ -1,3 +1,10 @@
+Possible ideas for new features, either via chat commands or periodic updates:
+
 * spec the command objects
 * move everything out of the lita namespace
-* the commands list should include descriptions of each report
+* the "schedule commands" list should include descriptions of each report
+* improve format of admin activity messages
+* split admin list in to super admins and delegated admins
+* more specs
+* add a license
+* rename to lita-gsuite?
