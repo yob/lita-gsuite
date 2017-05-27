@@ -1,7 +1,6 @@
 require "lita"
 require "lita-timing"
 require 'googleauth'
-require 'googleauth/stores/redis_token_store'
 require 'securerandom'
 
 module Lita
@@ -259,7 +258,7 @@ module Lita
           config.oauth_client_id,
           config.oauth_client_secret
         )
-        token_store = Google::Auth::Stores::RedisTokenStore.new(redis: redis)
+        token_store = RedisTokenStore.new(redis)
         Google::Auth::UserAuthorizer.new(client_id, GoogleAppsGateway::OAUTH_SCOPES, token_store)
       end
     end
