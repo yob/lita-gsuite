@@ -20,10 +20,6 @@ Edit your lita\_config.rb to include the following lines lines. Some of the
 values are sensitive, so using ENV vars is recommended to keep the values out
 of version control.
 
-First, the channel to send periodic updates to:
-
-    config.handlers.googleapps.channel_name = "general"
-
 When an API call to google is required, we want to make it with tokens that
 are tied to the specific user that requested data. To do so, we use Google's
 OAuth2 support.
@@ -34,12 +30,6 @@ details on how to generate these:
     config.handlers.googleapps.oauth_client_id = ENV["GOOGLE_CLIENT_ID"]
     config.handlers.googleapps.oauth_client_secret = ENV["GOOGLE_CLIENT_SECRET"]
 
-Finally, there's two optional settings that configure how long user accounts
-can be inactive before being flagged.
-
-    config.handlers.googleapps.max_weeks_without_login = 8
-    config.handlers.googleapps.max_weeks_suspended = 26
-
 ## Authentication
 
 The lita bot requires an OAuth client ID and secret before it can initiate
@@ -49,7 +39,7 @@ These can be created on the [Google Developers
 Console](https://console.developers.google.com/), and Google has [some
 documentation](https://developers.google.com/identity/protocols/OAuth2).
 
-You should be given the opportunity to copy the new ID and secret. Be sure to copy them
+You should be given the opportunity to view the new ID and secret. Be sure to copy them
 down, as they can't be retrieved again later.
 
 Once the handler is configured and running, each user that wants to interact with it
