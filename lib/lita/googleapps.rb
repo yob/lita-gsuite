@@ -13,6 +13,13 @@ module Lita
     config :oauth_client_id
     config :oauth_client_secret
 
+    # Authentication commands - each user is required to run these before they can interact with
+    # the Google API
+    route(/^googleapps auth$/, :start_auth, command: true, help: {"googleapps auth" => "Initiate the first of two steps required to authorise the current user wth Google"})
+    route(/^googleapps set-token (.+)$/, :set_token, command: true, help: {"googleapps set-token <token>" => "The second and final step required to authorise the current user with Google. Run 'googleapps auth' first"})
+
+    # Instant queries. Authenticated users can run these commands and the result will be returned
+    # immediately
     route(/^googleapps list-admins$/, :list_admins, command: true,  help: {"googleapps list-admins" => "List active admins"})
     route(/^googleapps suspension-candidates$/, :suspension_candidates, command: true, help: {"googleapps suspension-candidates" => "List active users that habven't signed in for a while"})
     route(/^googleapps deletion-candidates$/, :deletion_candidates, command: true,  help: {"googleapps deletion-candidates" => "List suspended users that habven't signed in for a while"})
@@ -21,12 +28,11 @@ module Lita
     route(/^googleapps two-factor-stats$/, :two_factor_stats, command: true,  help: {"googleapps two-factor-stats" => "Display stats on option of two factor authentication"})
     route(/^googleapps two-factor-off (.+)$/, :two_factor_off, command: true,  help: {"googleapps two-factor-off <OU path>" => "List users from the OU path with two factor authentication off"})
 
-    route(/^googleapps auth$/, :start_auth, command: true)
-    route(/^googleapps set-token (.+)$/, :set_token, command: true)
-    route(/^googleapps schedule list$/, :schedule_list, command: true)
-    route(/^googleapps schedule commands$/, :schedule_commands, command: true)
-    route(/^googleapps schedule add-weekly (.+) (\d\d:\d\d) (.+)$/, :schedule_add_weekly, command: true, help: {"googleapps schedule add-weekly <day> <HH:MM> <cmd>" => "Add a new googleapps schedule"})
-    route(/^googleapps schedule add-window (.+)$/, :schedule_add_window, command: true, help: {"googleapps schedule add-window <cmd>" => "Add a new googleapps schedule"})
+    # Control a schedule of automated commands to run in specific channels
+    route(/^googleapps schedule list$/, :schedule_list, command: true, help: {"googleapps schedule list" => "Print the list of scheduled googleapps commands for the current channel"})
+    route(/^googleapps schedule commands$/, :schedule_commands, command: true, help: {"googleapps schedule commands" => "Print the list of commands available for scheduling"})
+    route(/^googleapps schedule add-weekly (.+) (\d\d:\d\d) (.+)$/, :schedule_add_weekly, command: true, help: {"googleapps schedule add-weekly <day> <HH:MM> <cmd>" => "Add a new weekly scheduled command. Run 'googleapps schedule commands' to see the available commands"})
+    route(/^googleapps schedule add-window (.+)$/, :schedule_add_window, command: true, help: {"googleapps schedule add-window <cmd>" => "Add a new scheduled window command"})
 
     on :loaded, :start_timers
 
