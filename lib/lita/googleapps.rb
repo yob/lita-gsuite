@@ -33,6 +33,7 @@ module Lita
     route(/^googleapps schedule commands$/, :schedule_commands, command: true, help: {"googleapps schedule commands" => "Print the list of commands available for scheduling"})
     route(/^googleapps schedule add-weekly (.+) (\d\d:\d\d) (.+)$/, :schedule_add_weekly, command: true, help: {"googleapps schedule add-weekly <day> <HH:MM> <cmd>" => "Add a new weekly scheduled command. Run 'googleapps schedule commands' to see the available commands"})
     route(/^googleapps schedule add-window (.+)$/, :schedule_add_window, command: true, help: {"googleapps schedule add-window <cmd>" => "Add a new scheduled window command"})
+    route(/^googleapps schedule del (.+)$/, :schedule_delete, command: true, help: {"googleapps schedule del <cmd-id>" => "Delete a scheduled command. Requires a command ID, which is printed in 'googleapps schedule list' output"})
 
     on :loaded, :start_timers
 
@@ -190,6 +191,20 @@ module Lita
         response.reply("scheduled command")
       else
         response.reply("invalid command")
+      end
+    end
+
+    def schedule_delete(response)
+      return unless confirm_user_authenticated(response)
+
+      cmd_id = response.match_data[1].to_s
+
+      count = redis.hdel("weekly-schedule", cmd_id)
+      count += redis.hdel("window-schedule", cmd_id)
+      if count > 0
+        response.reply("scheduled command #{cmd_id} deleted")
+      else
+        response.reply("no scheduled command with ID #{cmd_id} found")
       end
     end
 
