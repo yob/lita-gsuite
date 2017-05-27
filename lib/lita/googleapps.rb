@@ -340,8 +340,10 @@ module Lita
 
     def logged_errors(&block)
       yield
-    rescue Exception => e
-      puts "Error in timer loop: #{e.inspect}"
+    rescue StandardError => e
+      $stderr.puts "Error in timer loop: #{e.inspect}"
+    rescue
+      $stderr.puts "Unknown error in timer loop"
     end
 
     def weekly_at(time, day, name, &block)
