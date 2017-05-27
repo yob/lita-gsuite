@@ -460,7 +460,7 @@ module Lita
       end
 
       def human
-        "Weekly: #{@day} #{@time} - #{@cmd.name}"
+        "Weekly (id: #{@id}): #{@day} #{@time} - #{@cmd.name}"
       end
 
       private
@@ -504,7 +504,7 @@ module Lita
       end
 
       def human
-        "Sliding Window: #{@cmd.name}"
+        "Sliding Window (id: #{@id}): #{@cmd.name}"
       end
 
       def valid?
