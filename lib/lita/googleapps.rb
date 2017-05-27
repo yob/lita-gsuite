@@ -45,7 +45,7 @@ module Lita
     def deletion_candidates(response)
       return unless confirm_user_authenticated(response)
 
-      DeletionCandidatesCommand.new.run_manual(
+      Commands::DeletionCandidates.new.run_manual(
         robot,
         response.room,
         gateway(response.user)
@@ -55,7 +55,7 @@ module Lita
     def empty_groups(response)
       return unless confirm_user_authenticated(response)
 
-      EmptyGroupsCommand.new.run_manual(
+      Commands::EmptyGroups.new.run_manual(
         robot,
         response.room,
         gateway(response.user)
@@ -65,7 +65,7 @@ module Lita
     def list_admins(response)
       return unless confirm_user_authenticated(response)
 
-      ListAdminsCommand.new.run_manual(
+      Commands::ListAdmins.new.run_manual(
         robot,
         response.room,
         gateway(response.user)
@@ -75,7 +75,7 @@ module Lita
     def no_org_unit(response)
       return unless confirm_user_authenticated(response)
 
-      NoOrgUnitCommand.new.run_manual(
+      Commands::NoOrgUnit.new.run_manual(
         robot,
         response.room,
         gateway(response.user)
@@ -85,7 +85,7 @@ module Lita
     def suspension_candidates(response)
       return unless confirm_user_authenticated(response)
 
-      SuspensionCandidatesCommand.new.run_manual(
+      Commands::SuspensionCandidates.new.run_manual(
         robot,
         response.room,
         gateway(response.user)
@@ -96,7 +96,7 @@ module Lita
       return unless confirm_user_authenticated(response)
 
       ou_path = response.match_data[1].to_s
-      TwoFactorOffCommand.new(ou_path).run_manual(
+      Commands::TwoFactorOff.new(ou_path).run_manual(
         robot,
         response.room,
         gateway(response.user)
@@ -106,7 +106,7 @@ module Lita
     def two_factor_stats(response)
       return unless confirm_user_authenticated(response)
 
-      TwoFactorStatsCommand.new.run_manual(
+      Commands::TwoFactorStats.new.run_manual(
         robot,
         response.room,
         gateway(response.user)
@@ -274,186 +274,6 @@ module Lita
       end
     end
 
-    class ListAdminsCommand
-
-      def name
-        'list-admins'
-      end
-
-      def run(robot, target, gateway)
-        msg = AdminListMessage.new(gateway).to_msg
-        robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = AdminListMessage.new(gateway).to_msg
-        if msg
-          robot.send_message(target, msg) if msg
-        else
-          robot.send_message(target, "No admins found")
-        end
-      end
-    end
-
-    class EmptyGroupsCommand
-
-      def name
-        'empty-groups'
-      end
-
-      def run(robot, target, gateway)
-        msg = EmptyGroupsMessage.new(gateway).to_msg
-        robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = EmptyGroupsMessage.new(gateway).to_msg
-        if msg
-          robot.send_message(target, msg) if msg
-        else
-          robot.send_message(target, "No groups found")
-        end
-      end
-    end
-
-    class NoOrgUnitCommand
-
-      def name
-        'no-org-unit'
-      end
-
-      def run(robot, target, gateway)
-        msg = NoOrgUnitMessage.new(gateway).to_msg
-        robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = NoOrgUnitMessage.new(gateway).to_msg
-        if msg
-          robot.send_message(target, msg) if msg
-        else
-          robot.send_message(target, "No users are missing an org unit")
-        end
-      end
-    end
-
-    class TwoFactorOffCommand
-
-      def initialize(ou_path = "/")
-        @ou_path = ou_path
-      end
-
-      def name
-        'two-factor-off'
-      end
-
-      def run(robot, target, gateway)
-        msg = TwoFactorOffMessage.new(gateway, @ou_path).to_msg
-        robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = TwoFactorOffMessage.new(gateway, @ou_path).to_msg
-        if msg
-          robot.send_message(target, msg)
-        else
-          robot.send_message(target, "No users found")
-        end
-      end
-    end
-
-    class TwoFactorStatsCommand
-
-      def name
-        'two-factor-stats'
-      end
-
-      def run(robot, target, gateway)
-        msg = TwoFactorMessage.new(gateway).to_msg
-        robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = TwoFactorMessage.new(gateway).to_msg
-        if msg
-          robot.send_message(target, msg) if msg
-        else
-          robot.send_message(target, "No stats found")
-        end
-      end
-    end
-
-    class SuspensionCandidatesCommand
-      MAX_WEEKS_WITHOUT_LOGIN = 8
-
-      def name
-        'suspension-candidates'
-      end
-
-      def run(robot, target, gateway)
-        return if @max_weeks_without_login < 1
-
-        msg = MaxWeeksWithoutLoginMessage.new(gateway, MAX_WEEKS_WITHOUT_LOGIN).to_msg
-        robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = MaxWeeksWithoutLoginMessage.new(gateway, MAX_WEEKS_WITHOUT_LOGIN).to_msg
-        if msg
-          robot.send_message(target, msg) if msg
-        else
-          robot.send_message(target, "No users found")
-        end
-      end
-    end
-
-    class DeletionCandidatesCommand
-      MAX_WEEKS_SUSPENDED = 26
-
-      def name
-        'deletion-candidates'
-      end
-
-      def run(robot, target, gateway)
-        return if @max_weeks_suspended < 1
-
-        msg = MaxWeeksSuspendedMessage.new(gateway, MAX_WEEKS_SUSPENDED).to_msg
-        robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = MaxWeeksSuspendedMessage.new(gateway, MAX_WEEKS_SUSPENDED).to_msg
-        if msg
-          robot.send_message(target, msg) if msg
-        else
-          robot.send_message(target, "No users found")
-        end
-      end
-    end
-
-    class ListActivitiesCommand
-
-      def name
-        'list-activities'
-      end
-
-      def duration_minutes
-        30
-      end
-
-      def buffer_minutes
-        30
-      end
-
-      def run(robot, target, gateway, window_start, window_end)
-        puts "run: #{window_start} #{window_end}"
-        activities = gateway.admin_activities(window_start, window_end)
-        activities.sort_by(&:time).map(&:to_msg).each_with_index do |message, index|
-          robot.send_message(target, message)
-          sleep(1) # TODO ergh. required to stop slack disconnecting us for high sending rates
-        end
-      end
-    end
 
     class WeeklySchedule
       attr_reader :id, :room_name, :user_id, :day, :time, :cmd
@@ -626,19 +446,19 @@ module Lita
 
     # TODO move to the top of this class
     COMMANDS = [
-      ListAdminsCommand,
-      EmptyGroupsCommand,
-      NoOrgUnitCommand,
-      TwoFactorOffCommand,
-      TwoFactorStatsCommand,
-      SuspensionCandidatesCommand,
-      DeletionCandidatesCommand,
+      Commands::ListAdmins,
+      Commands::EmptyGroups,
+      Commands::NoOrgUnit,
+      Commands::TwoFactorOff,
+      Commands::TwoFactorStats,
+      Commands::SuspensionCandidates,
+      Commands::DeletionCandidates,
     ].map { |cmd|
       [cmd.new.name, cmd]
     }.to_h
 
     WINDOW_COMMANDS = [
-      ListActivitiesCommand
+      Commands::ListActivities
     ].map { |cmd|
       [cmd.new.name, cmd]
     }.to_h
