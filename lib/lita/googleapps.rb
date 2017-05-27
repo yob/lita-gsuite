@@ -8,7 +8,24 @@ module Lita
   class Googleapps < Handler
     TIMER_INTERVAL = 60
     OOB_OAUTH_URI = 'urn:ietf:wg:oauth:2.0:oob'
-    MAX_SCHEDULES = 50
+
+    COMMANDS = [
+      Commands::ListAdmins,
+      Commands::EmptyGroups,
+      Commands::NoOrgUnit,
+      Commands::TwoFactorOff,
+      Commands::TwoFactorStats,
+      Commands::SuspensionCandidates,
+      Commands::DeletionCandidates,
+    ].map { |cmd|
+      [cmd.new.name, cmd]
+    }.to_h
+
+    WINDOW_COMMANDS = [
+      Commands::ListActivities
+    ].map { |cmd|
+      [cmd.new.name, cmd]
+    }.to_h
 
     config :oauth_client_id
     config :oauth_client_secret
@@ -341,25 +358,6 @@ module Lita
     end
 
     Lita.register_handler(self)
-
-    # TODO move to the top of this class
-    COMMANDS = [
-      Commands::ListAdmins,
-      Commands::EmptyGroups,
-      Commands::NoOrgUnit,
-      Commands::TwoFactorOff,
-      Commands::TwoFactorStats,
-      Commands::SuspensionCandidates,
-      Commands::DeletionCandidates,
-    ].map { |cmd|
-      [cmd.new.name, cmd]
-    }.to_h
-
-    WINDOW_COMMANDS = [
-      Commands::ListActivities
-    ].map { |cmd|
-      [cmd.new.name, cmd]
-    }.to_h
 
   end
 end
