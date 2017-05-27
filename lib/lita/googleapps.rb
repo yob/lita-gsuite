@@ -224,8 +224,6 @@ module Lita
     end
 
     def schedule_delete(response)
-      return unless confirm_user_authenticated(response)
-
       cmd_id = response.match_data[1].to_s
 
       count = redis.hdel("weekly-schedule", cmd_id)
