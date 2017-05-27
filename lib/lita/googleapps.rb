@@ -333,8 +333,10 @@ module Lita
     end
 
     def every_with_logged_errors(interval, &block)
-      logged_errors do
-        every(interval, &block)
+      every(interval) do
+        logged_errors do
+          yield
+        end
       end
     end
 
