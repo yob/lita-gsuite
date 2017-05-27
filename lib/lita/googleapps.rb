@@ -137,8 +137,12 @@ module Lita
     end
 
     def schedule_commands(response)
-      msg = "The following commands are available for scheduling:\n\n"
+      msg = "The following commands are available for scheduling weekly:\n\n"
       COMMANDS.each do |cmd_name, cmd_klass|
+        msg += "- #{cmd_name}\n"
+      end
+      msg += "The following commands are available for scheduling for sliding windows:\n\n"
+      WINDOW_COMMANDS.each do |cmd_name, cmd_klass|
         msg += "- #{cmd_name}\n"
       end
       response.reply(msg)
@@ -168,14 +172,19 @@ module Lita
     def schedule_add_window(response)
       return unless confirm_user_authenticated(response)
 
-      data = {
+      cmd_name = response.match_data[1].to_s
+      schedule = WindowSchedule.new(
         id: SecureRandom.hex(3),
-        cmd: response.match_data[1].to_s,
+        cmd: WINDOW_COMMANDS.fetch(cmd_name.downcase, nil),
         user_id: response.user.id,
         room_name: response.room.name,
-      }
-      redis.rpush("window-schedule", JSON.dump(data))
-      response.reply("scheduled command")
+      )
+      if schedule.valid?
+        redis.rpush("window-schedule", schedule.to_json)
+        response.reply("scheduled command")
+      else
+        response.reply("invalid command")
+      end
     end
 
     private
@@ -469,7 +478,7 @@ module Lita
       def initialize(id:, room_name:, user_id:, cmd:)
         @id = id
         @room_name, @user_id = room_name, user_id
-        @cmd = cmd
+        @cmd = cmd.new if cmd
       end
 
       def duration_minutes
@@ -490,6 +499,25 @@ module Lita
 
       def human
         "Sliding Window: #{@cmd.name}"
+      end
+
+      def valid?
+        room_name && user_id && valid_cmd?
+      end
+
+      def to_json
+        {
+          id: @id,
+          cmd: @cmd.name,
+          user_id: @user_id,
+          room_name: @room_name,
+        }.to_json
+      end
+
+      private
+
+      def valid_cmd?
+        cmd.respond_to?(:run)
       end
     end
 
@@ -527,11 +555,13 @@ module Lita
         JSON.parse(data)
       }.map { |data|
         WindowSchedule.new(
-          id: data.fetch("id", "foo"),
+          id: data.fetch("id", nil),
           room_name: data.fetch("room_name", nil),
           user_id: data.fetch("user_id", nil),
-          cmd: ListActivitiesCommand.new
+          cmd: WINDOW_COMMANDS.fetch(data.fetch("cmd", nil), nil),
         )
+      }.select { |schedule|
+        schedule.valid?
       }
     end
 
@@ -568,6 +598,12 @@ module Lita
 			TwoFactorStatsCommand,
 			SuspensionCandidatesCommand,
 			DeletionCandidatesCommand,
+    ].map { |cmd|
+      [cmd.new.name, cmd]
+    }.to_h
+
+    WINDOW_COMMANDS = [
+      ListActivitiesCommand
     ].map { |cmd|
       [cmd.new.name, cmd]
     }.to_h
