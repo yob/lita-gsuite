@@ -168,7 +168,7 @@ module Lita
         room_name: response.room.name,
       )
       if schedule.valid?
-        redis.rpush("weekly-schedule", schedule.to_json)
+        redis.hmset("weekly-schedule", schedule.id, schedule.to_json)
         response.reply("scheduled command")
       else
         response.reply("invalid command")
@@ -186,7 +186,7 @@ module Lita
         room_name: response.room.name,
       )
       if schedule.valid?
-        redis.rpush("window-schedule", schedule.to_json)
+        redis.hmset("window-schedule", schedule.id, schedule.to_json)
         response.reply("scheduled command")
       else
         response.reply("invalid command")
@@ -540,7 +540,7 @@ module Lita
     end
 
     def weekly_commands
-      redis.lrange("weekly-schedule", 0, MAX_SCHEDULES - 1).map { |data|
+      redis.hgetall("weekly-schedule").map { |_id, data|
         JSON.parse(data)
       }.map { |data|
         WeeklySchedule.new(
@@ -557,7 +557,7 @@ module Lita
     end
 
     def window_commands
-      redis.lrange("window-schedule", 0, MAX_SCHEDULES - 1).map { |data|
+      redis.hgetall("window-schedule").map { |_id, data|
         JSON.parse(data)
       }.map { |data|
         WindowSchedule.new(
