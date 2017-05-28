@@ -38,6 +38,8 @@ module Lita
       EOF
     end
 
+    private
+
     def values
       @params.map do |key, value|
         "#{key.gsub('_', ' ')}: #{value}"
