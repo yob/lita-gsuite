@@ -17,8 +17,8 @@ describe Lita::GoogleActivity do
           Date: Tue, 14 Jun 2016 02:27:48 GMT
           Admin User: ellie@hi.com
           Action: Add group member
-          User Email: foo@bar.com
-          Group Email: bargroup@foo.com
+          USER EMAIL: foo@bar.com
+          GROUP EMAIL: bargroup@foo.com
         EOF
       )
     end
