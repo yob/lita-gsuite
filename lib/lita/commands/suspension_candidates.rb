@@ -7,22 +7,12 @@ module Lita
         'suspension-candidates'
       end
 
-      def run(robot, target, gateway)
-        return if @max_weeks_without_login < 1
-
+      def run(robot, target, gateway, opts = {})
         msg = MaxWeeksWithoutLoginMessage.new(gateway, MAX_WEEKS_WITHOUT_LOGIN).to_msg
         robot.send_message(target, msg) if msg
+        robot.send_message(target, "No users found") if msg.nil? && opts[:negative_ack]
       end
 
-      def run_manual(robot, target, gateway)
-        msg = MaxWeeksWithoutLoginMessage.new(gateway, MAX_WEEKS_WITHOUT_LOGIN).to_msg
-        if msg
-          robot.send_message(target, msg) if msg
-        else
-          robot.send_message(target, "No users found")
-        end
-      end
     end
-
   end
 end

@@ -61,50 +61,55 @@ module Lita
     def deletion_candidates(response)
       return unless confirm_user_authenticated(response)
 
-      Commands::DeletionCandidates.new.run_manual(
+      Commands::DeletionCandidates.new.run(
         robot,
         Source.new(room: response.room),
-        gateway(response.user)
+        gateway(response.user),
+        negative_ack: true
       )
     end
 
     def empty_groups(response)
       return unless confirm_user_authenticated(response)
 
-      Commands::EmptyGroups.new.run_manual(
+      Commands::EmptyGroups.new.run(
         robot,
         Source.new(room: response.room),
-        gateway(response.user)
+        gateway(response.user),
+        negative_ack: true
       )
     end
 
     def list_admins(response)
       return unless confirm_user_authenticated(response)
 
-      Commands::ListAdmins.new.run_manual(
+      Commands::ListAdmins.new.run(
         robot,
         Source.new(room: response.room),
-        gateway(response.user)
+        gateway(response.user),
+        negative_ack: true
       )
     end
 
     def no_org_unit(response)
       return unless confirm_user_authenticated(response)
 
-      Commands::NoOrgUnit.new.run_manual(
+      Commands::NoOrgUnit.new.run(
         robot,
         Source.new(room: response.room),
-        gateway(response.user)
+        gateway(response.user),
+        negative_ack: true
       )
     end
 
     def suspension_candidates(response)
       return unless confirm_user_authenticated(response)
 
-      Commands::SuspensionCandidates.new.run_manual(
+      Commands::SuspensionCandidates.new.run(
         robot,
         Source.new(room: response.room),
-        gateway(response.user)
+        gateway(response.user),
+        negative_ack: true
       )
     end
 
@@ -112,20 +117,22 @@ module Lita
       return unless confirm_user_authenticated(response)
 
       ou_path = response.match_data[1].to_s
-      Commands::TwoFactorOff.new(ou_path).run_manual(
+      Commands::TwoFactorOff.new(ou_path).run(
         robot,
         Source.new(room: response.room),
-        gateway(response.user)
+        gateway(response.user),
+        negative_ack: true
       )
     end
 
     def two_factor_stats(response)
       return unless confirm_user_authenticated(response)
 
-      Commands::TwoFactorStats.new.run_manual(
+      Commands::TwoFactorStats.new.run(
         robot,
         Source.new(room: response.room),
-        gateway(response.user)
+        gateway(response.user),
+        negative_ack: true
       )
     end
 
