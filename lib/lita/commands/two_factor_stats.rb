@@ -6,20 +6,11 @@ module Lita
         'two-factor-stats'
       end
 
-      def run(robot, target, gateway)
+      def run(robot, target, gateway, opts = {})
         msg = TwoFactorMessage.new(gateway).to_msg
         robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = TwoFactorMessage.new(gateway).to_msg
-        if msg
-          robot.send_message(target, msg) if msg
-        else
-          robot.send_message(target, "No stats found")
-        end
+        robot.send_message(target, "No stats found") if msg.nil? && opts[:negative_ack]
       end
     end
-
   end
 end

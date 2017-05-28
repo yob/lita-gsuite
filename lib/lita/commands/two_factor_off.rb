@@ -11,18 +11,10 @@ module Lita
         'two-factor-off'
       end
 
-      def run(robot, target, gateway)
+      def run(robot, target, gateway, opts = {})
         msg = TwoFactorOffMessage.new(gateway, @ou_path).to_msg
         robot.send_message(target, msg) if msg
-      end
-
-      def run_manual(robot, target, gateway)
-        msg = TwoFactorOffMessage.new(gateway, @ou_path).to_msg
-        if msg
-          robot.send_message(target, msg)
-        else
-          robot.send_message(target, "No users found")
-        end
+        robot.send_message(target, "No users found") if msg.nil? && opts[:negative_ack]
       end
     end
   end
