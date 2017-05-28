@@ -11,7 +11,6 @@ require "lita/weekly_schedule"
 require "lita/window_schedule"
 
 require "lita/admin_list_message"
-require "lita/empty_groups_message"
 require "lita/google_apps_gateway"
 require 'lita/max_weeks_suspended_message'
 require 'lita/max_weeks_without_login_message'
