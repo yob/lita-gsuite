@@ -10,7 +10,6 @@ require "lita/commands/two_factor_stats"
 require "lita/weekly_schedule"
 require "lita/window_schedule"
 
-require "lita/admin_list_message"
 require "lita/google_apps_gateway"
 require 'lita/no_org_unit_message'
 require 'lita/two_factor_message'
