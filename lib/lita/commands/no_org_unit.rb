@@ -7,9 +7,30 @@ module Lita
       end
 
       def run(robot, target, gateway, opts = {})
-        msg = NoOrgUnitMessage.new(gateway).to_msg
+        msg = build_msg(gateway)
         robot.send_message(target, msg) if msg
         robot.send_message(target, "No users are missing an org unit") if msg.nil? && opts[:negative_ack]
+      end
+
+      private
+
+      def build_msg(gateway)
+        users = no_org_unit_users(gateway)
+
+        if users.any?
+          msg = "The following users are not assigned to an organisational unit:\n"
+          msg += users.map { |user|
+            "- #{user.email}"
+          }.join("\n")
+        end
+      end
+
+      def no_org_unit_users(gateway)
+        gateway.users.reject { |user|
+          user.suspended?
+        }.select { |user|
+          user.ou_path == "/"
+        }
       end
 
     end
