@@ -12,9 +12,35 @@ module Lita
       end
 
       def run(robot, target, gateway, opts = {})
-        msg = TwoFactorOffMessage.new(gateway, @ou_path).to_msg
+        msg = build_msg(gateway)
         robot.send_message(target, msg) if msg
-        robot.send_message(target, "No users found") if msg.nil? && opts[:negative_ack]
+        if msg.nil? && opts[:negative_ack]
+          robot.send_message(target, "All users in #{@ou_path} have Two Factor Authentication enabled")
+        end
+      end
+
+      private
+
+      def build_msg(gateway)
+        users = active_users_without_tfa(gateway)
+
+        if users.any?
+          msg = "Users in #{@ou_path} with Two Factor Authentication disabled:\n\n"
+          users.each do |user|
+            msg += "- #{user.email}\n"
+          end
+          msg
+        end
+      end
+
+      def active_users_without_tfa(gateway)
+        gateway.users.reject { |user|
+          user.suspended?
+        }.reject { |user|
+          user.two_factor_enabled?
+        }.select { |user|
+          user.ou_path == @ou_path
+        }
       end
     end
   end

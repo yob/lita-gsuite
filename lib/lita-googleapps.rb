@@ -11,7 +11,5 @@ require "lita/weekly_schedule"
 require "lita/window_schedule"
 
 require "lita/google_apps_gateway"
-require 'lita/two_factor_message'
-require 'lita/two_factor_off_message'
 require "lita/googleapps"
 require "lita/redis_token_store"
