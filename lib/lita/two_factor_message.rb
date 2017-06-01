@@ -1,3 +1,5 @@
+require 'bigdecimal'
+
 module Lita
   class TwoFactorMessage
     def initialize(gateway)
@@ -6,14 +8,16 @@ module Lita
 
     def to_msg
       users = active_users
-      users_with_tfa = users.select { |user| user.two_factor_enabled? }
-      ou_paths = users.group_by(&:ou_path).keys.sort
+      if users.any?
+        users_with_tfa = users.select { |user| user.two_factor_enabled? }
+        ou_paths = users.group_by(&:ou_path).keys.sort
 
-      msg = "Active users with Two Factor Authentication enabled:\n\n"
-      ou_paths.each do |ou_path|
-        msg += ou_msg(ou_path, users) + "\n"
+        msg = "Active users with Two Factor Authentication enabled:\n\n"
+        ou_paths.each do |ou_path|
+          msg += ou_msg(ou_path, users) + "\n"
+        end
+        msg + "- Overall #{users_with_tfa.size}/#{users.size} (#{percentage(users_with_tfa.size, users.size)}%)"
       end
-      msg + "- Overall #{users_with_tfa.size}/#{users.size} (#{percentage(users_with_tfa.size, users.size)}%)"
     end
 
     private
