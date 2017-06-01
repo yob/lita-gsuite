@@ -7,9 +7,7 @@ module Lita
     end
 
     def to_msg
-      if users_without_tfa.empty?
-        "All users in #{@ou_path} have Two Factor Authentication enabled"
-      else
+      if users_without_tfa.any?
         msg = "Users in #{@ou_path} with Two Factor Authentication disabled:\n\n"
         users_without_tfa.each do |user|
           msg += "- #{user.email}\n"
