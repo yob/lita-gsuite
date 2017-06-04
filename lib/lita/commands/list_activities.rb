@@ -8,11 +8,11 @@ module Lita
       end
 
       def duration_minutes
-        30
+        10
       end
 
       def buffer_minutes
-        30
+        10
       end
 
       def run(robot, target, gateway, window_start, window_end)
