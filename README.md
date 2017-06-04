@@ -128,7 +128,7 @@ new data is available:
     lita gsuite schedule add-window <report-name>
     lita gsuite schedule add-window list-activities
 
-Delete a scheduled report from the current room. The ID can be find in th
+Delete a scheduled report from the current room. The ID can be find in the
 output of "schedule list":
 
     lita gsuite schedule del <id>
