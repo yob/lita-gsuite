@@ -40,6 +40,8 @@ module Lita
           user.two_factor_enabled?
         }.select { |user|
           user.ou_path == @ou_path
+        }.sort_by { |user|
+          user.path
         }
       end
     end

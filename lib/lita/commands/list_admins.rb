@@ -27,9 +27,7 @@ module Lita
       end
 
       def all_admins(gateway)
-        (gateway.delegated_admins + gateway.super_admins).uniq.sort_by { |user|
-          [user.ou_path, user.email]
-        }
+        (gateway.delegated_admins + gateway.super_admins).uniq.sort_by(&:path)
       end
 
       def tfa?(user)

@@ -22,7 +22,7 @@ module Lita
           msg = "The following users have active accounts, but have not logged in for #{MAX_WEEKS_WITHOUT_LOGIN} weeks. "
           msg += "If appropriate, consider suspending or deleting their accounts:\n"
           msg += users.map { |user|
-            "- #{user.ou_path}/#{user.email}"
+            "- #{user.path}"
           }.sort.join("\n")
         end
       end

@@ -19,7 +19,7 @@ module Lita
 
         if users.any?
           msg = "The following users are not assigned to an organisational unit:\n"
-          msg += users.map { |user|
+          msg += users.sort_by(&:path).map { |user|
             "- #{user.email}"
           }.join("\n")
         end
