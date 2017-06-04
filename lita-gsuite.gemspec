@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = "lita-gsuite"
-  spec.version = "1.0.0"
+  spec.version = "0.5"
   spec.summary = "Monitor activity and data in a gsuite account"
   spec.description = "Adds commands to lita for monitoring gsuite account activity and flagging potential issues"
   spec.license = "MIT"
