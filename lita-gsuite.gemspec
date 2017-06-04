@@ -1,14 +1,14 @@
 Gem::Specification.new do |spec|
-  spec.name = "lita-googleapps"
+  spec.name = "lita-gsuite"
   spec.version = "1.0.0"
-  spec.summary = "Fetch data from a google apps account"
-  spec.description = "Adds some new commands for interacting with the google apps API"
+  spec.summary = "Monitor activity and data in a gsuite account"
+  spec.description = "Adds commands to lita for monitoring gsuite account activity and flagging potential issues"
   spec.license = "MIT"
   spec.files =  Dir.glob("{lib}/**/**/*")
   spec.extra_rdoc_files = %w{README.md MIT-LICENSE }
   spec.authors = ["James Healy"]
   spec.email   = ["james.healy@theconversation.edu.au"]
-  spec.homepage = "http://github.com/conversation/lita-googleapps"
+  spec.homepage = "http://github.com/yob/lita-gsuite"
   spec.required_ruby_version = ">=1.9.3"
   spec.metadata = { "lita_plugin_type" => "handler" }
 

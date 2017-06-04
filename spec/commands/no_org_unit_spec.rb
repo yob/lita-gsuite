@@ -5,7 +5,7 @@ describe Lita::Commands::NoOrgUnit do
     let(:cmd) { Lita::Commands::NoOrgUnit.new }
     let(:robot) { instance_double(Lita::Robot) }
     let(:target) { instance_double(Lita::Source) }
-    let(:gateway) { instance_double(Lita::GoogleAppsGateway) }
+    let(:gateway) { instance_double(Lita::GsuiteGateway) }
     let(:one_week_ago) { DateTime.now - 7 }
     let(:active_no_ou) {
       Lita::GoogleUser.new(

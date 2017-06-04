@@ -6,14 +6,14 @@ require 'google/apis/admin_directory_v1'
 require 'google/apis/admin_reports_v1'
 
 module Lita
-  # Wrapper class for interacting with the google apps directory API. Use
+  # Wrapper class for interacting with the gsuite directory API. Use
   # this to list users, groups, group members.
   #
   # It only has read-only permissions, so cannot make any changes.
   #
   # Usage:
   #
-  #     gateway = GoogleAppsGateway.new(
+  #     gateway = GsuiteGateway.new(
   #       user_authorization: auth
   #     )
   #
@@ -21,7 +21,7 @@ module Lita
   # the googleauth gem - check its documentation for more details on the
   # ways to build one of these objects.
   #
-  class GoogleAppsGateway
+  class GsuiteGateway
     OAUTH_SCOPES = [
       "https://www.googleapis.com/auth/admin.directory.user.readonly",
       "https://www.googleapis.com/auth/admin.directory.orgunit.readonly",

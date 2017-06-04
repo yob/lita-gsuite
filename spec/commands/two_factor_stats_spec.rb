@@ -5,7 +5,7 @@ describe Lita::Commands::TwoFactorStats do
     let(:cmd) { Lita::Commands::TwoFactorStats.new }
     let(:robot) { instance_double(Lita::Robot) }
     let(:target) { instance_double(Lita::Source) }
-    let(:gateway) { instance_double(Lita::GoogleAppsGateway) }
+    let(:gateway) { instance_double(Lita::GsuiteGateway) }
     let(:one_week_ago) { DateTime.now - 7 }
     let(:active_au_user_tfa_on) {
       Lita::GoogleUser.new(

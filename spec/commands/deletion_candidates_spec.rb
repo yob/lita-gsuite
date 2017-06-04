@@ -5,7 +5,7 @@ describe Lita::Commands::DeletionCandidates do
     let(:cmd) { Lita::Commands::DeletionCandidates.new }
     let(:robot) { instance_double(Lita::Robot) }
     let(:target) { instance_double(Lita::Source) }
-    let(:gateway) { instance_double(Lita::GoogleAppsGateway) }
+    let(:gateway) { instance_double(Lita::GsuiteGateway) }
     let(:one_week_ago) { DateTime.now - 7 }
     let(:three_months_ago) { DateTime.now - (3*30) }
     let(:one_year_ago) { DateTime.now - 365 }

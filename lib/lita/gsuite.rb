@@ -4,7 +4,7 @@ require 'googleauth'
 require 'securerandom'
 
 module Lita
-  class Googleapps < Handler
+  class Gsuite < Handler
     TIMER_INTERVAL = 60
     OOB_OAUTH_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
@@ -31,25 +31,25 @@ module Lita
 
     # Authentication commands - each user is required to run these before they can interact with
     # the Google API
-    route(/^googleapps auth$/, :start_auth, command: true, help: {"googleapps auth" => "Initiate the first of two steps required to authorise the current user wth Google"})
-    route(/^googleapps set-token (.+)$/, :set_token, command: true, help: {"googleapps set-token <token>" => "The second and final step required to authorise the current user with Google. Run 'googleapps auth' first"})
+    route(/^gsuite auth$/, :start_auth, command: true, help: {"gsuite auth" => "Initiate the first of two steps required to authorise the current user wth Google"})
+    route(/^gsuite set-token (.+)$/, :set_token, command: true, help: {"gsuite set-token <token>" => "The second and final step required to authorise the current user with Google. Run 'gsuite auth' first"})
 
     # Instant queries. Authenticated users can run these commands and the result will be returned
     # immediately
-    route(/^googleapps list-admins$/, :list_admins, command: true,  help: {"googleapps list-admins" => "List active admins"})
-    route(/^googleapps suspension-candidates$/, :suspension_candidates, command: true, help: {"googleapps suspension-candidates" => "List active users that habven't signed in for a while"})
-    route(/^googleapps deletion-candidates$/, :deletion_candidates, command: true,  help: {"googleapps deletion-candidates" => "List suspended users that habven't signed in for a while"})
-    route(/^googleapps no-ou$/, :no_org_unit, command: true,  help: {"googleapps no-ou" => "List users that aren't assigned to an Organisation Unit"})
-    route(/^googleapps empty-groups$/, :empty_groups, command: true,  help: {"googleapps empty-groups" => "List groups with no users"})
-    route(/^googleapps two-factor-stats$/, :two_factor_stats, command: true,  help: {"googleapps two-factor-stats" => "Display stats on option of two factor authentication"})
-    route(/^googleapps two-factor-off (.+)$/, :two_factor_off, command: true,  help: {"googleapps two-factor-off <OU path>" => "List users from the OU path with two factor authentication off"})
+    route(/^gsuite list-admins$/, :list_admins, command: true,  help: {"gsuite list-admins" => "List active admins"})
+    route(/^gsuite suspension-candidates$/, :suspension_candidates, command: true, help: {"gsuite suspension-candidates" => "List active users that habven't signed in for a while"})
+    route(/^gsuite deletion-candidates$/, :deletion_candidates, command: true,  help: {"gsuite deletion-candidates" => "List suspended users that habven't signed in for a while"})
+    route(/^gsuite no-ou$/, :no_org_unit, command: true,  help: {"gsuite no-ou" => "List users that aren't assigned to an Organisation Unit"})
+    route(/^gsuite empty-groups$/, :empty_groups, command: true,  help: {"gsuite empty-groups" => "List groups with no users"})
+    route(/^gsuite two-factor-stats$/, :two_factor_stats, command: true,  help: {"gsuite two-factor-stats" => "Display stats on option of two factor authentication"})
+    route(/^gsuite two-factor-off (.+)$/, :two_factor_off, command: true,  help: {"gsuite two-factor-off <OU path>" => "List users from the OU path with two factor authentication off"})
 
     # Control a schedule of automated commands to run in specific channels
-    route(/^googleapps schedule list$/, :schedule_list, command: true, help: {"googleapps schedule list" => "Print the list of scheduled googleapps commands for the current channel"})
-    route(/^googleapps schedule commands$/, :schedule_commands, command: true, help: {"googleapps schedule commands" => "Print the list of commands available for scheduling"})
-    route(/^googleapps schedule add-weekly (.+) (\d\d:\d\d) (.+)$/, :schedule_add_weekly, command: true, help: {"googleapps schedule add-weekly <day> <HH:MM> <cmd>" => "Add a new weekly scheduled command. Run 'googleapps schedule commands' to see the available commands"})
-    route(/^googleapps schedule add-window (.+)$/, :schedule_add_window, command: true, help: {"googleapps schedule add-window <cmd>" => "Add a new scheduled window command"})
-    route(/^googleapps schedule del (.+)$/, :schedule_delete, command: true, help: {"googleapps schedule del <cmd-id>" => "Delete a scheduled command. Requires a command ID, which is printed in 'googleapps schedule list' output"})
+    route(/^gsuite schedule list$/, :schedule_list, command: true, help: {"gsuite schedule list" => "Print the list of scheduled gsuite commands for the current channel"})
+    route(/^gsuite schedule commands$/, :schedule_commands, command: true, help: {"gsuite schedule commands" => "Print the list of commands available for scheduling"})
+    route(/^gsuite schedule add-weekly (.+) (\d\d:\d\d) (.+)$/, :schedule_add_weekly, command: true, help: {"gsuite schedule add-weekly <day> <HH:MM> <cmd>" => "Add a new weekly scheduled command. Run 'gsuite schedule commands' to see the available commands"})
+    route(/^gsuite schedule add-window (.+)$/, :schedule_add_window, command: true, help: {"gsuite schedule add-window <cmd>" => "Add a new scheduled window command"})
+    route(/^gsuite schedule del (.+)$/, :schedule_delete, command: true, help: {"gsuite schedule del <cmd-id>" => "Delete a scheduled command. Requires a command ID, which is printed in 'gsuite schedule list' output"})
 
     on :loaded, :start_timers
 
@@ -140,9 +140,9 @@ module Lita
       credentials = google_credentials_for_user(response.user)
       url = google_authorizer.get_authorization_url(base_url: OOB_OAUTH_URI)
       if credentials.nil?
-        response.reply "Open the following URL in your browser and enter the resulting code via the 'googleapps set-token <foo>' command:\n\n#{url}"
+        response.reply "Open the following URL in your browser and enter the resulting code via the 'gsuite set-token <foo>' command:\n\n#{url}"
       else
-        response.reply "#{response.user.name} is already authorized with Google. To re-authorize, open the following URL in your browser and enter the resulting code via the 'googleapps set-token <foo>' command:\n\n#{url}"
+        response.reply "#{response.user.name} is already authorized with Google. To re-authorize, open the following URL in your browser and enter the resulting code via the 'gsuite set-token <foo>' command:\n\n#{url}"
       end
     rescue StandardError => e
       response.reply("Error: #{e.class} #{e.message}")
@@ -248,7 +248,7 @@ module Lita
     def confirm_user_authenticated(response)
       credentials = google_credentials_for_user(response.user)
       if credentials.nil?
-        response.reply("#{response.user.name} not authorized with Google yet. Use the 'googleapps auth' command to initiate authorization")
+        response.reply("#{response.user.name} not authorized with Google yet. Use the 'gsuite auth' command to initiate authorization")
         false
       else
         true
@@ -266,7 +266,7 @@ module Lita
           config.oauth_client_secret
         )
         token_store = RedisTokenStore.new(redis)
-        Google::Auth::UserAuthorizer.new(client_id, GoogleAppsGateway::OAUTH_SCOPES, token_store)
+        Google::Auth::UserAuthorizer.new(client_id, GsuiteGateway::OAUTH_SCOPES, token_store)
       end
     end
 
@@ -362,7 +362,7 @@ module Lita
     end
 
     def gateway(user)
-      Lita::GoogleAppsGateway.new(
+      Lita::GsuiteGateway.new(
         user_authorization: google_authorizer.get_credentials(user.id)
       )
     end

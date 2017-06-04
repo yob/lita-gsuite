@@ -10,6 +10,6 @@ require "lita/commands/two_factor_stats"
 require "lita/weekly_schedule"
 require "lita/window_schedule"
 
-require "lita/google_apps_gateway"
-require "lita/googleapps"
+require "lita/gsuite_gateway"
+require "lita/gsuite"
 require "lita/redis_token_store"

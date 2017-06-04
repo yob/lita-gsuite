@@ -5,7 +5,7 @@ describe Lita::Commands::ListActivities do
     let(:cmd) { Lita::Commands::ListActivities .new }
     let(:robot) { instance_double(Lita::Robot) }
     let(:target) { instance_double(Lita::Source) }
-    let(:gateway) { instance_double(Lita::GoogleAppsGateway) }
+    let(:gateway) { instance_double(Lita::GsuiteGateway) }
     let(:one_hour_ago) { (Time.now - (60*60)).utc.to_datetime }
     let(:twenty_minutes_ago) { (Time.now - (20*60)).utc.to_datetime }
     let(:ten_minutes_ago) { (Time.now - (10*60)).utc.to_datetime }

@@ -5,7 +5,7 @@ describe Lita::Commands::EmptyGroups do
     let(:cmd) { Lita::Commands::EmptyGroups.new }
     let(:robot) { instance_double(Lita::Robot) }
     let(:target) { instance_double(Lita::Source) }
-    let(:gateway) { instance_double(Lita::GoogleAppsGateway) }
+    let(:gateway) { instance_double(Lita::GsuiteGateway) }
     let(:group_with_members) {
       Lita::GoogleGroup.new(
         id: "1",

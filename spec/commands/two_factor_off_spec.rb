@@ -5,7 +5,7 @@ describe Lita::Commands::TwoFactorOff do
     let(:cmd) { Lita::Commands::TwoFactorOff.new }
     let(:robot) { instance_double(Lita::Robot) }
     let(:target) { instance_double(Lita::Source) }
-    let(:gateway) { instance_double(Lita::GoogleAppsGateway) }
+    let(:gateway) { instance_double(Lita::GsuiteGateway) }
     let(:one_week_ago) { DateTime.now - 7 }
     let(:active_user_tfa_on) {
       Lita::GoogleUser.new(
