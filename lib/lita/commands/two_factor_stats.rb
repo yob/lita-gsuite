@@ -1,3 +1,5 @@
+require 'bigdecimal'
+
 module Lita
   module Commands
     class TwoFactorStats
