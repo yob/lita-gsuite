@@ -45,6 +45,14 @@ module Lita
       @delegated_admin
     end
 
+    def path
+      if @ou_path.end_with?("/")
+        "#{@ou_path}#{@email}"
+      else
+        "#{@ou_path}/#{@email}"
+      end
+    end
+
     def suspended?
       @suspended
     end
