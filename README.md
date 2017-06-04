@@ -12,30 +12,21 @@ well to larger accounts, but feedback and optimisations are welcome.
 
 Add this gem to your lita installation by including the following line in your Gemfile:
 
-    gem "lita-gsuite", git: "http://github.com/yob/lita-gsuite.git"
+    gem "lita-gsuite"
 
 ## Configuration
 
-Edit your lita\_config.rb to include the following lines lines. Some of the
-values are sensitive, so using ENV vars is recommended to keep the values out
-of version control.
+The lita bot requires an OAuth client ID and secret before it can initiate
+the process to generate an OAuth2 token for each user. That requires an OAuth2
+client ID and secret.
 
-When an API call to google is required, we want to make it with tokens that
-are tied to the specific user that requested data. To do so, we use Google's
-OAuth2 support.
-
-That requires an OAuth2 client ID and secret - see "Authentication" below for more
-details on how to generate these:
+Both values must be added to your lita\_config.rb. Both are sensitive, so using
+ENV vars is recommended to keep the values out of version control.
 
     config.handlers.gsuite.oauth_client_id = ENV["GOOGLE_CLIENT_ID"]
     config.handlers.gsuite.oauth_client_secret = ENV["GOOGLE_CLIENT_SECRET"]
 
-## Authentication
-
-The lita bot requires an OAuth client ID and secret before it can initiate
-the process to generate an OAuth2 token for each user.
-
-These can be created on the [Google Developers
+You can generate the ID and secret on the [Google Developers
 Console](https://console.developers.google.com/), and Google has [some
 documentation](https://developers.google.com/identity/protocols/OAuth2).
 
@@ -49,8 +40,7 @@ their behalf.
 
 ## Enable Google API
 
-The GSuite API must be explicitly enabled for your account, and the new service account
-must be whitelisted before it can access any data.
+The GSuite API must be explicitly enabled for your account:
 
 1. Sign in to https://admin.google.com
 2. Visit the Security tab, click "API reference" and "Enable API Access"
