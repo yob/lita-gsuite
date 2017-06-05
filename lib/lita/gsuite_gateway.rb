@@ -1,3 +1,4 @@
+require 'lita/google_account'
 require 'lita/google_activity'
 require 'lita/google_group'
 require 'lita/google_organisation_unit'
@@ -26,11 +27,18 @@ module Lita
       "https://www.googleapis.com/auth/admin.directory.user.readonly",
       "https://www.googleapis.com/auth/admin.directory.orgunit.readonly",
       "https://www.googleapis.com/auth/admin.reports.audit.readonly",
-      "https://www.googleapis.com/auth/admin.directory.group.readonly"
+      "https://www.googleapis.com/auth/admin.directory.group.readonly",
+      "https://www.googleapis.com/auth/admin.directory.customer.readonly",
     ]
 
     def initialize(user_authorization: nil)
       @user_authorization = user_authorization
+    end
+
+    # return an object with some basic data on the entire gsuite account
+    def account_summary
+      data = directory_service.get_customer("my_customer")
+      GoogleAccount.from_api(data)
     end
 
     def admin_activities(start_time, end_time)
