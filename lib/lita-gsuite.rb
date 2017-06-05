@@ -1,3 +1,4 @@
+require "lita/commands/account_summary"
 require "lita/commands/deletion_candidates"
 require "lita/commands/empty_groups"
 require "lita/commands/list_admins"

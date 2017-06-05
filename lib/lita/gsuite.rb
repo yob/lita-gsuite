@@ -9,6 +9,7 @@ module Lita
     OOB_OAUTH_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
     COMMANDS = [
+      Commands::AccountSummary,
       Commands::ListAdmins,
       Commands::EmptyGroups,
       Commands::NoOrgUnit,
@@ -36,6 +37,7 @@ module Lita
 
     # Instant queries. Authenticated users can run these commands and the result will be returned
     # immediately
+    route(/^gsuite account-summary$/, :account_summary, command: true,  help: {"gsuite account" => "Summarise key account details"})
     route(/^gsuite list-admins$/, :list_admins, command: true,  help: {"gsuite list-admins" => "List active admins"})
     route(/^gsuite suspension-candidates$/, :suspension_candidates, command: true, help: {"gsuite suspension-candidates" => "List active users that habven't signed in for a while"})
     route(/^gsuite deletion-candidates$/, :deletion_candidates, command: true,  help: {"gsuite deletion-candidates" => "List suspended users that habven't signed in for a while"})
@@ -56,6 +58,16 @@ module Lita
     def start_timers(payload)
       weekly_commands_timer
       window_commands_timer
+    end
+
+    def account_summary(response)
+      return unless confirm_user_authenticated(response)
+
+      Commands::AccountSummary.new.run(
+        robot,
+        Source.new(room: response.room),
+        gateway(response.user)
+      )
     end
 
     def deletion_candidates(response)
