@@ -49,6 +49,13 @@ The GSuite API must be explicitly enabled for your account:
 
 ### Administrators
 
+Display a summary of the GSuite account - organisation name, contant details,
+alternative email address, etc.
+
+    lita gsuite account-summary
+
+### Administrators
+
 List users with super or delegated administrative privileges, and their two-factor
 auth status.
 
