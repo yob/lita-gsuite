@@ -53,17 +53,9 @@ With the installation and configuration complete, restart your lita bot.
 
 Open your chat interface, and issue the following commands the bot.
 
-1. Initiate authentication for your user:
-
-    lita gsuite auth
-
-2. Provide yur unique token to lita-gsuite:
-
-    lita gsuite set-token <token-generated-in-previous-step>
-
-3. Fetch an account summary:
-
-    lita gsuite account-summary
+1. Initiate authentication for your user: `lita gsuite auth`
+2. Provide your unique token to lita-gsuite: `lita gsuite set-token <token-generated-in-previous-step>`
+3. Fetch an account summary: `lita gsuite account-summary`
 
 All going well, you should see a summary of your gsuite account printed in the channel.
 
