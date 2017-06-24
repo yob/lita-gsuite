@@ -8,13 +8,15 @@ into the account, not provide administrative functions.
 This was written for a GSuite account with ~125 active users. It may not scale
 well to larger accounts, but feedback and optimisations are welcome.
 
-## Installation
+## Getting Started
+
+### 1. Installation
 
 Add this gem to your lita installation by including the following line in your Gemfile:
 
     gem "lita-gsuite"
 
-## Configuration
+### 2. Configuration
 
 The lita bot requires an OAuth client ID and secret before it can initiate
 the process to generate an OAuth2 token for each user. That requires an OAuth2
@@ -38,14 +40,34 @@ will be prompted to complete an OAuth authorisation process before they can star
 generates an API token that's specific to them and will be used to make API calls on
 their behalf.
 
-## Enable Google API
+### 3. Enable Google API
 
 The GSuite API must be explicitly enabled for your account:
 
 1. Sign in to https://admin.google.com
 2. Visit the Security tab, click "API reference" and "Enable API Access"
 
-## Chat commands
+### 4. Authorising and First Commands
+
+With the installation and configuration complete, restart your lita bot.
+
+Open your chat interface, and issue the following commands the bot.
+
+1. Initiate authentication for your user:
+
+    lita gsuite auth
+
+2. Provide yur unique token to lita-gsuite:
+
+    lita gsuite set-token <token-generated-in-previous-step>
+
+3. Fetch an account summary:
+
+    lita gsuite account-summary
+
+All going well, you should see a summary of your gsuite account printed in the channel.
+
+## Chat commands Reference
 
 ### Administrators
 
