@@ -9,7 +9,7 @@ module Lita
           actor: item.actor.email,
           ip: item.ip_address,
           name: event.name,
-          params: event.parameters.inject({}) { |accum, param|
+          params: (event.parameters || []).inject({}) { |accum, param|
             accum[param.name] = param.value
             accum
           }
