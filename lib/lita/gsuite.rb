@@ -37,7 +37,7 @@ module Lita
 
     # Instant queries. Authenticated users can run these commands and the result will be returned
     # immediately
-    route(/^gsuite account-summary$/, :account_summary, command: true,  help: {"gsuite account" => "Summarise key account details"})
+    route(/^gsuite account-summary$/, :account_summary, command: true,  help: {"gsuite account-summary" => "Summarise key account details"})
     route(/^gsuite list-admins$/, :list_admins, command: true,  help: {"gsuite list-admins" => "List active admins"})
     route(/^gsuite suspension-candidates$/, :suspension_candidates, command: true, help: {"gsuite suspension-candidates" => "List active users that habven't signed in for a while"})
     route(/^gsuite deletion-candidates$/, :deletion_candidates, command: true,  help: {"gsuite deletion-candidates" => "List suspended users that habven't signed in for a while"})
